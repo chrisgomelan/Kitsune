@@ -11,8 +11,24 @@ interface WatchPlayerProps {
 }
 
 const SERVERS = [
-  { id: "vidsrc", name: "VidSrc Stream", getUrl: (id: number, ep: number) => `https://vidsrc.cc/v2/embed/anime/${id}/${ep}?sub=1` },
-  { id: "autoembed", name: "AutoEmbed Server", getUrl: (id: number, ep: number) => `https://anime.autoembed.cc/embed/anime/${id}/${ep}` },
+  {
+    id: "vidlink-sub",
+    name: "VidLink (Sub)",
+    getUrl: (id: number, ep: number) =>
+      `https://vidlink.pro/anime/${id}/${ep}/sub?fallback=true&primaryColor=8b5cf6&secondaryColor=6366f1`,
+  },
+  {
+    id: "vidlink-dub",
+    name: "VidLink (Dub)",
+    getUrl: (id: number, ep: number) =>
+      `https://vidlink.pro/anime/${id}/${ep}/dub?fallback=true&primaryColor=8b5cf6&secondaryColor=6366f1`,
+  },
+  {
+    id: "videasy",
+    name: "Videasy Server",
+    getUrl: (id: number, ep: number) =>
+      `https://player.videasy.to/anime/${id}/${ep}`,
+  },
 ];
 
 function formatTime(totalSeconds: number): string {
@@ -62,7 +78,6 @@ export default function WatchPlayer({
   const handleSelectEpisode = (ep: number) => {
     if (ep < 1) return;
     setEpisode(ep);
-    // Reset timestamp for new episode
     setSavedTime(0);
     setMinutesInput("0");
     setSecondsInput("0");
@@ -123,6 +138,17 @@ export default function WatchPlayer({
             ))}
           </select>
 
+          {/* Pop-out external player */}
+          <a
+            href={playerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open in new window"
+            className="rounded-xl bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-violet-600 hover:text-white"
+          >
+            ↗ Pop-out
+          </a>
+
           {/* Prev / Next buttons */}
           <button
             onClick={() => handleSelectEpisode(episode - 1)}
@@ -148,9 +174,14 @@ export default function WatchPlayer({
           src={playerUrl}
           title={`${title} Episode ${episode}`}
           className="h-full w-full border-0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           allowFullScreen
         />
+      </div>
+
+      {/* Help / Tip for Brave / Adblock */}
+      <div className="flex items-center justify-between text-[11px] text-white/40">
+        <span>💡 Tip: If video is blocked, turn off Brave Shields / adblocker for this site or click <strong>↗ Pop-out</strong>.</span>
       </div>
 
       {/* Timestamp / Checkpoint Bar */}
