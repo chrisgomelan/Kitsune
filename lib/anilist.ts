@@ -99,6 +99,7 @@ export function mapAniListToAnimeBase(media: AniListMedia): AnimeBase {
 
   return {
     mal_id: malId,
+    anilist_id: media.id,
     title: media.title.romaji || media.title.english || "Unknown Title",
     title_english: media.title.english || media.title.romaji || null,
     images: {
