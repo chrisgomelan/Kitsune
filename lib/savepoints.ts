@@ -1,4 +1,4 @@
-﻿/**
+/**
  * lib/savepoints.ts
  * useSavepoints() – localStorage hook for tracking watch progress.
  *
@@ -81,11 +81,24 @@ export function useSavepoints() {
       title: string,
       image: string,
       status: WatchStatus,
-      episode: number
+      episode: number,
+      timestamp?: number,
+      duration?: number
     ) => {
+      const current = readStore();
+      const existing = current[mal_id];
       const next = {
-        ...readStore(),
-        [mal_id]: { mal_id, title, image, status, episode, updatedAt: Date.now() },
+        ...current,
+        [mal_id]: {
+          mal_id,
+          title,
+          image,
+          status,
+          episode,
+          timestamp: timestamp !== undefined ? timestamp : existing?.timestamp,
+          duration: duration !== undefined ? duration : existing?.duration,
+          updatedAt: Date.now(),
+        },
       };
       writeStore(next);
       setStore(next);

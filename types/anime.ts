@@ -1,4 +1,4 @@
-﻿// Jikan API v4 response types
+// Jikan API v4 response types
 // Keep strict – avoid `any`. Add new fields here rather than casting in place.
 
 export type WatchStatus = "watching" | "planned" | "completed" | "dropped";
@@ -11,6 +11,10 @@ export interface Savepoint {
   status: WatchStatus;
   /** Last episode watched (0 = not started) */
   episode: number;
+  /** Watched timestamp in seconds (e.g. 842 = 14:02) */
+  timestamp?: number;
+  /** Episode duration in seconds (e.g. 1440 = 24:00) */
+  duration?: number;
   /** Date.now() timestamp */
   updatedAt: number;
 }

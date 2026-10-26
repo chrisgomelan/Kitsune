@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -19,6 +19,12 @@ const STATUS_LABELS: Record<WatchStatus, string> = {
   completed: "Completed",
   dropped: "Dropped",
 };
+
+function formatTime(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
 
 export default function LibraryPage() {
   const { ready, list } = useSavepoints();
@@ -83,14 +89,22 @@ export default function LibraryPage() {
                     {sp.title}
                   </h2>
                   <p className="mt-0.5 text-xs text-white/40">
-                    Ep {sp.episode} · {new Date(sp.updatedAt).toLocaleDateString()}
+                    Ep {sp.episode || 1}
+                    {sp.timestamp && sp.timestamp > 0 ? ` • ${formatTime(sp.timestamp)}` : ""}
+                    {" · "}
+                    {new Date(sp.updatedAt).toLocaleDateString()}
                   </p>
                 </div>
-                <span
-                  className={`mt-2 w-fit rounded-full px-3 py-0.5 text-xs font-medium ring-1 ${STATUS_COLORS[sp.status]}`}
-                >
-                  {STATUS_LABELS[sp.status]}
-                </span>
+                <div className="mt-2 flex items-center justify-between">
+                  <span
+                    className={`rounded-full px-3 py-0.5 text-xs font-medium ring-1 ${STATUS_COLORS[sp.status]}`}
+                  >
+                    {STATUS_LABELS[sp.status]}
+                  </span>
+                  <span className="text-xs font-semibold text-violet-400 opacity-0 transition-opacity group-hover:opacity-100">
+                    Resume →
+                  </span>
+                </div>
               </div>
             </Link>
           ))}
