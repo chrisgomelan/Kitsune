@@ -19,6 +19,18 @@ const SERVERS = [
       `https://embed.vidrift.net/embed/anilist/${aniId ?? malId}/${ep}`,
   },
   {
+    id: "vidsrc",
+    name: "VidSrc Stream",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://vidsrc.me/embed/anime?id=${malId}&ep=${ep}`,
+  },
+  {
+    id: "streamsearch",
+    name: "StreamSearch Player",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://streamsearch.xyz/embed/anime/${malId}/${ep}`,
+  },
+  {
     id: "videasy",
     name: "Videasy Server",
     getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
