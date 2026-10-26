@@ -20,6 +20,7 @@ import {
   fetchTopAnimeFromAniList,
   fetchSeasonalAnimeFromAniList,
   searchAnimeFromAniList,
+  fetchAnimeByGenreFromAniList,
   fetchAnimeFullFromAniList,
 } from "@/lib/anilist";
 
@@ -155,6 +156,50 @@ export async function searchAnime(
           (a.title_english ?? "").toLowerCase().includes(q)
       )
       .slice(0, limit);
+  }
+}
+
+/** GET anime by genre (cached 1 h) */
+export async function getAnimeByGenre(
+  genre: string,
+  limit = 18
+): Promise<AnimeBase[]> {
+  try {
+    if (USE_MOCK) {
+      return [...MOCK_TOP_ANIME, ...MOCK_SEASONAL_ANIME]
+        .filter((a) =>
+          a.genres.some((g) => g.name.toLowerCase() === genre.toLowerCase())
+        )
+        .slice(0, limit);
+    }
+
+    // 1. Try AniList (Primary)
+    try {
+      const list = await fetchAnimeByGenreFromAniList(genre, limit);
+      if (list && list.length > 0) return list;
+    } catch (err) {
+      console.warn(`[api] AniList getAnimeByGenre(${genre}) failed, trying Jikan fallback:`, err);
+    }
+
+    // 2. Try Jikan (Secondary)
+    try {
+      const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
+        "/anime",
+        3600,
+        { q: genre, order_by: "popularity", sort: "desc", limit }
+      );
+      if (data?.data && data.data.length > 0) return data.data;
+    } catch {
+      console.warn(`[api] getAnimeByGenre(${genre}): All APIs unreachable, using offline mock data`);
+    }
+
+    return [...MOCK_TOP_ANIME, ...MOCK_SEASONAL_ANIME]
+      .filter((a) =>
+        a.genres.some((g) => g.name.toLowerCase().includes(genre.toLowerCase()))
+      )
+      .slice(0, limit);
+  } catch {
+    return [];
   }
 }
 

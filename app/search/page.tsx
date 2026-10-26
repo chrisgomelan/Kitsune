@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import AnimeCard from "@/components/AnimeCard";
 import { searchAnime } from "@/lib/jikan";
 
@@ -33,12 +33,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const results = await searchAnime(query);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 space-y-8">
+    <div className="mx-auto max-w-7xl px-3.5 py-6 sm:px-6 sm:py-10 space-y-6 sm:space-y-8">
       <header>
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-xl sm:text-2xl font-bold text-white">
           Results for <span className="text-violet-300">"{query}"</span>
         </h1>
-        <p className="mt-1 text-sm text-white/40">
+        <p className="mt-1 text-xs sm:text-sm text-white/40">
           {results.length} anime found
         </p>
       </header>
@@ -46,7 +46,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       {results.length === 0 ? (
         <p className="text-white/50">No results found. Try a different search.</p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {results.map((anime) => (
             <AnimeCard key={anime.mal_id} anime={anime} />
           ))}

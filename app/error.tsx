@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
+import { AlertCircleIcon } from "@/components/Icons";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -19,7 +20,9 @@ export default function GlobalError({ error, reset }: ErrorProps) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
       <div className="rounded-3xl bg-white/5 p-10 ring-1 ring-white/10 max-w-md w-full">
-        <div className="text-5xl mb-4">{isRateLimit ? "🐌" : "😵"}</div>
+        <div className="mb-4 flex justify-center">
+          <AlertCircleIcon className="size-12 text-violet-400" />
+        </div>
         <h1 className="text-xl font-bold text-white mb-2">
           {isRateLimit ? "Slow down a bit!" : "Something went wrong"}
         </h1>

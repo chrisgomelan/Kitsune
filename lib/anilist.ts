@@ -299,6 +299,28 @@ export async function searchAnimeFromAniList(queryText: string, limit = 20): Pro
   return data.Page.media.map(mapAniListToAnimeBase);
 }
 
+/** Fetch anime by genre sorted by popularity */
+export async function fetchAnimeByGenreFromAniList(genre: string, limit = 18): Promise<AnimeBase[]> {
+  const query = `
+    query GetAnimeByGenre($genre: String, $perPage: Int) {
+      Page(page: 1, perPage: $perPage) {
+        media(type: ANIME, genre: $genre, sort: POPULARITY_DESC) {
+          ${MEDIA_FIELDS}
+        }
+      }
+    }
+  `;
+
+  interface Response {
+    Page: {
+      media: AniListMedia[];
+    };
+  }
+
+  const data = await anilistRequest<Response>(query, { genre, perPage: limit }, 3600);
+  return data.Page.media.map(mapAniListToAnimeBase);
+}
+
 /** Get full anime details by ID (matches idMal or AniList id) */
 export async function fetchAnimeFullFromAniList(id: number): Promise<AnimeFull> {
   // First attempt query by idMal (MyAnimeList ID)

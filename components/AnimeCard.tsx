@@ -1,5 +1,6 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
+import { StarIcon } from "@/components/Icons";
 import type { AnimeBase } from "@/types/anime";
 
 interface AnimeCardProps {
@@ -28,8 +29,9 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
         {/* Score badge */}
         {anime.score && (
-          <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-yellow-400 backdrop-blur-sm">
-            ★ {anime.score.toFixed(1)}
+          <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-bold text-amber-300 backdrop-blur-sm">
+            <StarIcon className="size-3 text-amber-400" />
+            <span>{anime.score.toFixed(1)}</span>
           </div>
         )}
         {/* Type badge */}

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSavepoints } from "@/lib/savepoints";
-import BackupButtons from "@/components/BackupButtons";
+import { BookmarkIcon, ChevronRightIcon } from "@/components/Icons";
 import type { WatchStatus } from "@/types/anime";
 
 const STATUS_COLORS: Record<WatchStatus, string> = {
@@ -39,26 +39,26 @@ export default function LibraryPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 space-y-8">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">My Library</h1>
-          <p className="mt-1 text-sm text-white/40">
-            {savepoints.length} {savepoints.length === 1 ? "savepoint" : "savepoints"} saved
-          </p>
-        </div>
-        <BackupButtons />
+    <div className="mx-auto max-w-7xl px-3.5 py-6 sm:px-6 sm:py-10 space-y-6 sm:space-y-8">
+      <header>
+        <h1 className="text-2xl font-bold text-white">My Library</h1>
+        <p className="mt-1 text-sm text-white/40">
+          {savepoints.length} {savepoints.length === 1 ? "savepoint" : "savepoints"} saved
+        </p>
       </header>
 
       {savepoints.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/10 py-20 text-center">
-          <p className="text-lg text-white/40">No savepoints yet.</p>
-          <p className="mt-2 text-sm text-white/25">
-            Browse anime and hit "Save to Library" to start tracking.
+        <div className="flex flex-col items-center rounded-2xl border border-dashed border-white/10 py-16 px-4 text-center">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-white/40 ring-1 ring-white/10">
+            <BookmarkIcon className="size-6" />
+          </div>
+          <p className="text-base sm:text-lg font-semibold text-white/60">No savepoints yet.</p>
+          <p className="mt-1 text-xs sm:text-sm text-white/40 max-w-sm">
+            Browse anime and hit &quot;Save to Library&quot; to start tracking your progress.
           </p>
           <Link
             href="/"
-            className="mt-6 inline-block rounded-xl bg-violet-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-500"
+            className="mt-5 inline-block rounded-xl bg-violet-600 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white transition hover:bg-violet-500 active:scale-95"
           >
             Discover Anime
           </Link>
@@ -101,8 +101,9 @@ export default function LibraryPage() {
                   >
                     {STATUS_LABELS[sp.status]}
                   </span>
-                  <span className="text-xs font-semibold text-violet-400 opacity-0 transition-opacity group-hover:opacity-100">
-                    Resume →
+                  <span className="flex items-center gap-0.5 text-xs font-semibold text-violet-400 opacity-0 transition-opacity group-hover:opacity-100">
+                    <span>Resume</span>
+                    <ChevronRightIcon className="size-3" />
                   </span>
                 </div>
               </div>
