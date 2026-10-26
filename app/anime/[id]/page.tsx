@@ -1,7 +1,8 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Image from "next/image";
 import { getAnimeFull } from "@/lib/jikan";
 import SaveButton from "@/components/SaveButton";
+import WatchPlayer from "@/components/WatchPlayer";
 
 interface AnimeDetailPageProps {
   params: Promise<{ id: string }>;
@@ -97,6 +98,16 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
           </div>
         </div>
       </div>
+
+      {/* Watch Player */}
+      <section aria-labelledby="watch-heading">
+        <WatchPlayer
+          mal_id={anime.mal_id}
+          title={title}
+          image={imageUrl}
+          totalEpisodes={anime.episodes}
+        />
+      </section>
 
       {anime.synopsis && (
         <section className="mt-10" aria-labelledby="synopsis-heading">
