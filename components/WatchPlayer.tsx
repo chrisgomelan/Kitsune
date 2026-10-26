@@ -19,6 +19,18 @@ const SERVERS = [
       `https://embed.vidrift.net/embed/anilist/${aniId ?? malId}/${ep}`,
   },
   {
+    id: "vidsrc",
+    name: "VidSrc Stream",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://vidsrc.me/embed/anime?id=${malId}&ep=${ep}`,
+  },
+  {
+    id: "streamsearch",
+    name: "StreamSearch Player",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://streamsearch.xyz/embed/anime/${malId}/${ep}`,
+  },
+  {
     id: "videasy",
     name: "Videasy Server",
     getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
@@ -146,15 +158,30 @@ export default function WatchPlayer({
             ))}
           </select>
 
+          {/* Float Window (Preserves subtitles in PiP/mini mode) */}
+          <button
+            onClick={() => {
+              window.open(
+                playerUrl,
+                "KitsuneFloatPlayer",
+                "width=854,height=480,left=100,top=100,resizable=yes,scrollbars=no,status=no,toolbar=no,menubar=no"
+              );
+            }}
+            title="Pop out a floating mini-player with subtitles preserved"
+            className="rounded-xl bg-violet-600/30 px-3 py-1.5 text-xs font-semibold text-violet-200 ring-1 ring-violet-500/40 transition hover:bg-violet-600 hover:text-white active:scale-95 flex items-center gap-1.5"
+          >
+            <span>🗗</span> Mini Player (with Subs)
+          </button>
+
           {/* Pop-out external player */}
           <a
             href={playerUrl}
             target="_blank"
             rel="noopener noreferrer"
             title="Open in new window"
-            className="rounded-xl bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-violet-600 hover:text-white"
+            className="rounded-xl bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 transition hover:bg-white/20"
           >
-            ↗ Pop-out
+            ↗ New Tab
           </a>
 
           {/* Prev / Next buttons */}
