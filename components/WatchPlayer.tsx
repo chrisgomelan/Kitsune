@@ -23,6 +23,12 @@ interface WatchPlayerProps {
 
 const SERVERS = [
   {
+    id: "vidrift",
+    name: "VidRift Player (HD)",
+    getUrl: (malId: number, aniId: number | undefined, ep: number) =>
+      `https://embed.vidrift.net/embed/anilist/${aniId ?? malId}/${ep}`,
+  },
+  {
     id: "vidlink-sub",
     name: "VidLink (Sub - HD)",
     getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
@@ -57,12 +63,6 @@ const SERVERS = [
     name: "Embed.su (Fast)",
     getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
       `https://embed.su/embed/anime/${malId}/${ep}`,
-  },
-  {
-    id: "vidrift",
-    name: "VidRift Player",
-    getUrl: (malId: number, aniId: number | undefined, ep: number) =>
-      `https://embed.vidrift.net/embed/anilist/${aniId ?? malId}/${ep}`,
   },
   {
     id: "vidsrc-me",
