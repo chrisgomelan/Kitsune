@@ -23,32 +23,8 @@ interface WatchPlayerProps {
 
 const SERVERS = [
   {
-    id: "vidrift",
-    name: "VidRift Player (HD)",
-    getUrl: (malId: number, aniId: number | undefined, ep: number) =>
-      `https://embed.vidrift.net/embed/anilist/${aniId ?? malId}/${ep}`,
-  },
-  {
-    id: "vidsrc",
-    name: "VidSrc Stream",
-    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
-      `https://vidsrc.me/embed/anime?id=${malId}&ep=${ep}`,
-  },
-  {
-    id: "streamsearch",
-    name: "StreamSearch Player",
-    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
-      `https://streamsearch.xyz/embed/anime/${malId}/${ep}`,
-  },
-  {
-    id: "videasy",
-    name: "Videasy Server",
-    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
-      `https://player.videasy.to/anime/${malId}/${ep}`,
-  },
-  {
     id: "vidlink-sub",
-    name: "VidLink (Sub)",
+    name: "VidLink (Sub - HD)",
     getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
       `https://vidlink.pro/anime/${malId}/${ep}/sub?fallback=true&primaryColor=8b5cf6&secondaryColor=6366f1`,
   },
@@ -57,6 +33,54 @@ const SERVERS = [
     name: "VidLink (Dub)",
     getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
       `https://vidlink.pro/anime/${malId}/${ep}/dub?fallback=true&primaryColor=8b5cf6&secondaryColor=6366f1`,
+  },
+  {
+    id: "autoembed",
+    name: "AutoEmbed (Multi-Source)",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://player.autoembed.cc/embed/anime/${malId}/${ep}`,
+  },
+  {
+    id: "videasy",
+    name: "Videasy Server",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://player.videasy.to/anime/${malId}/${ep}`,
+  },
+  {
+    id: "vidsrc-cc",
+    name: "VidSrc CC (Sub & Dub)",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://vidsrc.cc/v2/embed/anime/${malId}/${ep}`,
+  },
+  {
+    id: "embedsu",
+    name: "Embed.su (Fast)",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://embed.su/embed/anime/${malId}/${ep}`,
+  },
+  {
+    id: "vidrift",
+    name: "VidRift Player",
+    getUrl: (malId: number, aniId: number | undefined, ep: number) =>
+      `https://embed.vidrift.net/embed/anilist/${aniId ?? malId}/${ep}`,
+  },
+  {
+    id: "vidsrc-me",
+    name: "VidSrc Stream",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://vidsrc.me/embed/anime?id=${malId}&ep=${ep}`,
+  },
+  {
+    id: "twoembed",
+    name: "2Embed Player",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://www.2embed.cc/embed/anime/${malId}/${ep}`,
+  },
+  {
+    id: "streamsearch",
+    name: "StreamSearch",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://streamsearch.xyz/embed/anime/${malId}/${ep}`,
   },
 ];
 
