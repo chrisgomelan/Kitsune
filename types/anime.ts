@@ -68,6 +68,7 @@ export interface JikanAirDate {
 
 export interface AnimeBase {
   mal_id: number;
+  anilist_id?: number;
   title: string;
   title_english: string | null;
   images: JikanImages;

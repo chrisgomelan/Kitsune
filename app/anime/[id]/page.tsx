@@ -103,6 +103,7 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
       <section aria-labelledby="watch-heading">
         <WatchPlayer
           mal_id={anime.mal_id}
+          anilist_id={anime.anilist_id}
           title={title}
           image={imageUrl}
           totalEpisodes={anime.episodes}

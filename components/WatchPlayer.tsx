@@ -5,6 +5,7 @@ import { useSavepoints } from "@/lib/savepoints";
 
 interface WatchPlayerProps {
   mal_id: number;
+  anilist_id?: number;
   title: string;
   image: string;
   totalEpisodes: number | null;
@@ -12,22 +13,28 @@ interface WatchPlayerProps {
 
 const SERVERS = [
   {
-    id: "vidlink-sub",
-    name: "VidLink (Sub)",
-    getUrl: (id: number, ep: number) =>
-      `https://vidlink.pro/anime/${id}/${ep}/sub?fallback=true&primaryColor=8b5cf6&secondaryColor=6366f1`,
-  },
-  {
-    id: "vidlink-dub",
-    name: "VidLink (Dub)",
-    getUrl: (id: number, ep: number) =>
-      `https://vidlink.pro/anime/${id}/${ep}/dub?fallback=true&primaryColor=8b5cf6&secondaryColor=6366f1`,
+    id: "vidrift",
+    name: "VidRift Player (HD)",
+    getUrl: (malId: number, aniId: number | undefined, ep: number) =>
+      `https://embed.vidrift.net/embed/anilist/${aniId ?? malId}/${ep}`,
   },
   {
     id: "videasy",
     name: "Videasy Server",
-    getUrl: (id: number, ep: number) =>
-      `https://player.videasy.to/anime/${id}/${ep}`,
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://player.videasy.to/anime/${malId}/${ep}`,
+  },
+  {
+    id: "vidlink-sub",
+    name: "VidLink (Sub)",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://vidlink.pro/anime/${malId}/${ep}/sub?fallback=true&primaryColor=8b5cf6&secondaryColor=6366f1`,
+  },
+  {
+    id: "vidlink-dub",
+    name: "VidLink (Dub)",
+    getUrl: (malId: number, _aniId: number | undefined, ep: number) =>
+      `https://vidlink.pro/anime/${malId}/${ep}/dub?fallback=true&primaryColor=8b5cf6&secondaryColor=6366f1`,
   },
 ];
 
@@ -39,6 +46,7 @@ function formatTime(totalSeconds: number): string {
 
 export default function WatchPlayer({
   mal_id,
+  anilist_id,
   title,
   image,
   totalEpisodes,
@@ -72,7 +80,7 @@ export default function WatchPlayer({
   }, [ready, current]);
 
   const activeServer = SERVERS.find((s) => s.id === server) ?? SERVERS[0];
-  const playerUrl = activeServer.getUrl(mal_id, episode);
+  const playerUrl = activeServer.getUrl(mal_id, anilist_id, episode);
 
   // Handle Episode Change
   const handleSelectEpisode = (ep: number) => {
