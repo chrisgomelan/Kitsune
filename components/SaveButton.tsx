@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSavepoints } from "@/lib/savepoints";
 import { BookmarkIcon, CheckIcon } from "@/components/Icons";
 import type { WatchStatus } from "@/types/anime";
@@ -26,6 +26,14 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
   const [status, setStatus] = useState<WatchStatus>(current?.status ?? "planned");
   const [episode, setEpisode] = useState<number>(current?.episode ?? 0);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Sync state when savepoint changes (e.g. from WatchPlayer episode changes)
+  useEffect(() => {
+    if (current) {
+      if (current.status) setStatus(current.status);
+      if (typeof current.episode === "number") setEpisode(current.episode);
+    }
+  }, [current]);
 
   if (!ready) {
     return <div className="h-28 w-full animate-pulse rounded-2xl bg-white/5" />;
@@ -81,11 +89,10 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
               type="button"
               onClick={() => setStatus(opt.id)}
               aria-pressed={isActive}
-              className={`rounded-lg py-1.5 sm:py-2 text-xs font-semibold transition-all ${
-                isActive
+              className={`rounded-lg py-1.5 sm:py-2 text-xs font-semibold transition-all ${isActive
                   ? "bg-violet-600 text-white shadow-md"
                   : "text-white/60 hover:text-white hover:bg-white/5"
-              }`}
+                }`}
             >
               {opt.label}
             </button>
