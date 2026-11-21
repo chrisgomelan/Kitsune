@@ -8,11 +8,18 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: {
-    default: "Kitsune – Anime Watch Tracker",
+    default: "Kitsune",
     template: "%s | Kitsune",
   },
   description:
-    "Track your anime watch progress with Kitsune. Browse top anime, seasonal picks, and save your progress — no account needed.",
+    "Track and stream your favorite anime with Kitsune. Browse top anime, seasonal picks, and save your progress effortlessly.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     siteName: "Kitsune",
     type: "website",
