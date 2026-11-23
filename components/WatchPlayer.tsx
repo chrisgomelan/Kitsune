@@ -600,6 +600,7 @@ return (
         title={`${title} Episode ${episode}`}
         onLoad={sendNextUpInfo}
         className="h-full w-full border-0"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
         allowFullScreen
       />
@@ -645,11 +646,16 @@ return (
       </button>
     </div>
 
-    {/* Tip for playback issues */}
-    <div className="flex items-start gap-2 rounded-xl bg-amber-500/10 px-3 py-2 text-[11px] text-amber-200/90 ring-1 ring-amber-500/20">
-      <InfoIcon className="size-3.5 shrink-0 mt-0.5 text-amber-300" />
-      <span>
-        <strong>Tip:</strong> If the video won&apos;t load, switch servers above or tap <strong>New Tab</strong>. On mobile, disable adblocker/shields if playback is blocked.
+    {/* Ad-Shield & Playback Tip */}
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl bg-violet-500/10 px-3.5 py-2.5 text-[11px] text-violet-200 ring-1 ring-violet-500/20">
+      <div className="flex items-center gap-2">
+        <span className="flex h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
+        <span>
+          <strong>Ad-Shield Active:</strong> Pop-ups and new tab redirects are blocked. For a 100% ad-free experience, we recommend <strong>Brave Browser</strong> or <strong>uBlock Origin</strong>.
+        </span>
+      </div>
+      <span className="text-white/45 text-[10px] shrink-0">
+        Video issue? Switch servers above or open in New Tab
       </span>
     </div>
 
