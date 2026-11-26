@@ -18,6 +18,7 @@ import {
 } from "@/lib/mock-data";
 import {
   fetchTopAnimeFromAniList,
+  fetchPopularAnimeFromAniList,
   fetchSeasonalAnimeFromAniList,
   searchAnimeFromAniList,
   fetchAnimeByGenreFromAniList,
@@ -63,12 +64,12 @@ async function jikanFetch<T>(
 // ---------------------------------------------------------------------------
 
 /** GET top anime (cached 1 h) */
-export async function getTopAnime(limit = 12): Promise<AnimeBase[]> {
+export async function getTopAnime(limit = 12, page = 1): Promise<AnimeBase[]> {
   if (USE_MOCK) return MOCK_TOP_ANIME.slice(0, limit);
 
   // 1. Try AniList (Primary)
   try {
-    const list = await fetchTopAnimeFromAniList(limit);
+    const list = await fetchTopAnimeFromAniList(page, limit);
     if (list && list.length > 0) return list;
   } catch (err) {
     console.warn("[api] AniList getTopAnime failed, trying Jikan fallback:", err);
@@ -79,7 +80,7 @@ export async function getTopAnime(limit = 12): Promise<AnimeBase[]> {
     const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
       "/top/anime",
       3600,
-      { limit }
+      { page, limit }
     );
     return data.data;
   } catch {
@@ -88,13 +89,39 @@ export async function getTopAnime(limit = 12): Promise<AnimeBase[]> {
   }
 }
 
+/** GET popular anime (cached 1 h) */
+export async function getPopularAnime(limit = 24, page = 1): Promise<AnimeBase[]> {
+  if (USE_MOCK) return MOCK_TOP_ANIME.slice(0, limit);
+
+  // 1. Try AniList (Primary)
+  try {
+    const list = await fetchPopularAnimeFromAniList(page, limit);
+    if (list && list.length > 0) return list;
+  } catch (err) {
+    console.warn("[api] AniList getPopularAnime failed, trying Jikan fallback:", err);
+  }
+
+  // 2. Try Jikan (Secondary)
+  try {
+    const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
+      "/top/anime",
+      3600,
+      { filter: "bypopularity", page, limit }
+    );
+    return data.data;
+  } catch {
+    console.warn("[api] getPopularAnime: All APIs unreachable, using offline mock data");
+    return MOCK_TOP_ANIME.slice(0, limit);
+  }
+}
+
 /** GET seasonal anime (cached 1 h) */
-export async function getSeasonalAnime(limit = 12): Promise<AnimeBase[]> {
+export async function getSeasonalAnime(limit = 12, page = 1): Promise<AnimeBase[]> {
   if (USE_MOCK) return MOCK_SEASONAL_ANIME.slice(0, limit);
 
   // 1. Try AniList (Primary)
   try {
-    const list = await fetchSeasonalAnimeFromAniList(limit);
+    const list = await fetchSeasonalAnimeFromAniList(page, limit);
     if (list && list.length > 0) return list;
   } catch (err) {
     console.warn("[api] AniList getSeasonalAnime failed, trying Jikan fallback:", err);
@@ -105,7 +132,7 @@ export async function getSeasonalAnime(limit = 12): Promise<AnimeBase[]> {
     const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
       "/seasons/now",
       3600,
-      { limit }
+      { page, limit }
     );
     return data.data;
   } catch {
@@ -117,7 +144,8 @@ export async function getSeasonalAnime(limit = 12): Promise<AnimeBase[]> {
 /** Search anime by query (cached 10 min) */
 export async function searchAnime(
   query: string,
-  limit = 20
+  limit = 20,
+  page = 1
 ): Promise<AnimeBase[]> {
   if (USE_MOCK) {
     const q = query.toLowerCase();
@@ -132,7 +160,7 @@ export async function searchAnime(
 
   // 1. Try AniList (Primary)
   try {
-    const list = await searchAnimeFromAniList(query, limit);
+    const list = await searchAnimeFromAniList(query, page, limit);
     if (list && list.length > 0) return list;
   } catch (err) {
     console.warn("[api] AniList searchAnime failed, trying Jikan fallback:", err);
@@ -143,7 +171,7 @@ export async function searchAnime(
     const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
       "/anime",
       600,
-      { q: query, sfw: true, limit }
+      { q: query, sfw: true, page, limit }
     );
     return data.data;
   } catch {
@@ -162,7 +190,8 @@ export async function searchAnime(
 /** GET anime by genre (cached 1 h) */
 export async function getAnimeByGenre(
   genre: string,
-  limit = 18
+  limit = 18,
+  page = 1
 ): Promise<AnimeBase[]> {
   try {
     if (USE_MOCK) {
@@ -175,7 +204,7 @@ export async function getAnimeByGenre(
 
     // 1. Try AniList (Primary)
     try {
-      const list = await fetchAnimeByGenreFromAniList(genre, limit);
+      const list = await fetchAnimeByGenreFromAniList(genre, page, limit);
       if (list && list.length > 0) return list;
     } catch (err) {
       console.warn(`[api] AniList getAnimeByGenre(${genre}) failed, trying Jikan fallback:`, err);
@@ -186,7 +215,7 @@ export async function getAnimeByGenre(
       const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
         "/anime",
         3600,
-        { q: genre, order_by: "popularity", sort: "desc", limit }
+        { q: genre, order_by: "popularity", sort: "desc", page, limit }
       );
       if (data?.data && data.data.length > 0) return data.data;
     } catch {

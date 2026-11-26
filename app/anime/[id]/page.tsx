@@ -4,6 +4,7 @@ import { getAnimeFull } from "@/lib/jikan";
 import SaveButton from "@/components/SaveButton";
 import WatchPlayer from "@/components/WatchPlayer";
 import { StarIcon } from "@/components/Icons";
+import { JaggedShoutBubble } from "@/components/MangaSpeechBubbles";
 
 interface AnimeDetailPageProps {
   params: Promise<{ id: string }>;
@@ -33,37 +34,44 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
   const imageUrl = anime.images.jpg.large_image_url ?? anime.images.jpg.image_url;
 
   return (
-    <div className="mx-auto max-w-5xl px-3.5 py-6 sm:px-6 sm:py-10 space-y-8 sm:space-y-10">
-      {/* ── Main Details Header ── */}
-      <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-8">
-        {/* Poster */}
-        <div className="relative mx-auto h-80 w-56 flex-shrink-0 overflow-hidden rounded-2xl shadow-2xl shadow-black/60 ring-1 ring-white/15 md:mx-0 md:h-[390px] md:w-64">
+    <div className="mx-auto max-w-5xl px-3 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
+      {/* ── Main Details Header Panel ── */}
+      <div className="relative bg-white dark:bg-[#1a1b20] border-2 border-black dark:border-white p-3.5 sm:p-6 shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff] flex flex-col gap-5 md:flex-row md:items-start md:gap-8">
+        {/* Poster with Manga Ink border - centered on mobile */}
+        <div className="relative mx-auto h-72 w-52 sm:h-80 sm:w-56 flex-shrink-0 overflow-hidden border-2 border-black dark:border-white shadow-[3px_3px_0px_#000000] dark:shadow-[3px_3px_0px_#ffffff] md:mx-0 md:h-[380px] md:w-64 bg-gray-100 dark:bg-zinc-800">
           <Image
             src={imageUrl}
             alt={`${title} poster`}
             fill
-            className="object-cover"
+            className="object-cover manga-grayscale-img"
             priority
-            sizes="(max-width: 768px) 224px, 256px"
+            sizes="(max-width: 768px) 220px, 256px"
           />
+          {/* Sticker */}
+          <div className="absolute -bottom-2.5 -right-2 z-10 w-24 sm:w-28">
+            <JaggedShoutBubble text="INFO" />
+          </div>
         </div>
 
         {/* Info Column */}
-        <div className="flex flex-1 flex-col gap-5">
+        <div className="flex flex-1 flex-col gap-3.5 sm:gap-4">
           {/* Title & Metadata */}
           <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight tracking-tight text-white">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+              Anime Profile
+            </span>
+            <h1 className="font-manga-title text-xl sm:text-3xl md:text-4xl font-black leading-tight tracking-wide text-black dark:text-white uppercase">
               {title}
             </h1>
             {anime.title_english && anime.title !== anime.title_english && (
-              <p className="mt-1 text-sm sm:text-base text-white/50">{anime.title}</p>
+              <p className="mt-0.5 text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">{anime.title}</p>
             )}
 
             {/* Studio & Season Line */}
-            <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs font-medium text-white/60">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
               {anime.studios.length > 0 && (
                 <span>
-                  Studio <strong className="text-white/80">{anime.studios.map((s) => s.name).join(", ")}</strong>
+                  Studio: <strong className="text-black dark:text-white">{anime.studios.map((s) => s.name).join(", ")}</strong>
                 </span>
               )}
               {anime.studios.length > 0 && anime.season && <span>•</span>}
@@ -76,11 +84,11 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
 
             {/* Genre Pills */}
             {anime.genres.length > 0 && (
-              <div className="mt-3.5 flex flex-wrap gap-1.5">
+              <div className="mt-3 flex flex-wrap gap-1.5">
                 {anime.genres.map((g) => (
                   <span
                     key={g.mal_id}
-                    className="rounded-lg bg-violet-600/15 px-2.5 py-1 text-xs font-semibold text-violet-300 ring-1 ring-violet-500/25"
+                    className="border-1.5 border-black dark:border-white bg-gray-100 dark:bg-zinc-800 px-2.5 py-0.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-black dark:text-white shadow-[1.5px_1.5px_0px_#000000] dark:shadow-[1.5px_1.5px_0px_#ffffff]"
                   >
                     {g.name}
                   </span>
@@ -89,12 +97,11 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
             )}
           </div>
 
-          {/* Key Specs Grid - Clean, aligned, uniform */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* Key Specs Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
             <StatCard
-              label="Score"
-              value={anime.score ? anime.score.toFixed(1) : "—"}
-              icon={anime.score ? <StarIcon className="size-3.5 text-amber-400" /> : undefined}
+              label="Rating"
+              value={anime.score ? `★ ${anime.score.toFixed(1)}` : "—"}
             />
             <StatCard
               label="Episodes"
@@ -110,18 +117,20 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
             />
           </div>
 
-          {/* Watch Status & Progress Card */}
-          <SaveButton
-            mal_id={anime.mal_id}
-            title={title}
-            image={anime.images.jpg.image_url}
-            totalEpisodes={anime.episodes}
-          />
+          {/* Watch Status & Save Progress Card */}
+          <div className="pt-2">
+            <SaveButton
+              mal_id={anime.mal_id}
+              title={title}
+              image={anime.images.jpg.image_url}
+              totalEpisodes={anime.episodes}
+            />
+          </div>
         </div>
       </div>
 
       {/* ── Watch Player ── */}
-      <section aria-labelledby="watch-heading">
+      <section aria-label="Watch Episodes">
         <WatchPlayer
           mal_id={anime.mal_id}
           anilist_id={anime.anilist_id}
@@ -133,11 +142,11 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
 
       {/* ── Synopsis ── */}
       {anime.synopsis && (
-        <section aria-labelledby="synopsis-heading" className="space-y-3 rounded-2xl bg-white/[0.02] p-5 sm:p-6 ring-1 ring-white/10">
-          <h2 id="synopsis-heading" className="text-base sm:text-lg font-bold text-white">
-            Synopsis
+        <section aria-labelledby="synopsis-heading" className="bg-white dark:bg-[#1a1b20] border-2 border-black dark:border-white p-3.5 sm:p-6 shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff] space-y-2">
+          <h2 id="synopsis-heading" className="font-manga-title text-base sm:text-xl font-black text-black dark:text-white tracking-wide uppercase">
+            Story Summary
           </h2>
-          <p className="text-sm leading-relaxed text-white/70 whitespace-pre-line sm:text-base">
+          <p className="text-xs sm:text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-line font-medium">
             {anime.synopsis}
           </p>
         </section>
@@ -145,11 +154,11 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
 
       {/* ── Trailer ── */}
       {anime.trailer.embed_url && (
-        <section aria-labelledby="trailer-heading" className="space-y-3">
-          <h2 id="trailer-heading" className="text-base sm:text-lg font-bold text-white">
-            Trailer
+        <section aria-labelledby="trailer-heading" className="bg-white dark:bg-[#1a1b20] border-2 border-black dark:border-white p-3.5 sm:p-6 shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff] space-y-3">
+          <h2 id="trailer-heading" className="font-manga-title text-base sm:text-xl font-black text-black dark:text-white tracking-wide uppercase">
+            Official Preview Video
           </h2>
-          <div className="relative aspect-video overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
+          <div className="relative aspect-video overflow-hidden border-2 border-black dark:border-white bg-black">
             <iframe
               src={anime.trailer.embed_url}
               title={`${title} trailer`}
@@ -167,20 +176,17 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
 function StatCard({
   label,
   value,
-  icon,
 }: {
   label: string;
   value: string;
-  icon?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl bg-white/[0.04] p-3 text-center ring-1 ring-white/10">
-      <span className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+    <div className="flex flex-col items-center justify-center border-1.5 border-black dark:border-white bg-gray-50 dark:bg-zinc-800 p-2 text-center shadow-[1.5px_1.5px_0px_#000000] dark:shadow-[1.5px_1.5px_0px_#ffffff]">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
         {label}
       </span>
-      <span className="mt-1 flex items-center justify-center gap-1 text-sm font-bold text-white">
-        {icon}
-        <span className="truncate max-w-full">{value}</span>
+      <span className="mt-0.5 text-xs font-black text-black dark:text-white truncate max-w-full">
+        {value}
       </span>
     </div>
   );

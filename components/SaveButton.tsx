@@ -27,7 +27,7 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
   const [episode, setEpisode] = useState<number>(current?.episode ?? 0);
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  // Sync state when savepoint changes (e.g. from WatchPlayer episode changes)
+  // Sync state when savepoint changes
   useEffect(() => {
     if (current) {
       if (current.status) setStatus(current.status);
@@ -36,7 +36,7 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
   }, [current]);
 
   if (!ready) {
-    return <div className="h-28 w-full animate-pulse rounded-2xl bg-white/5" />;
+    return <div className="h-28 w-full animate-pulse border-2 border-black dark:border-white bg-gray-100 dark:bg-zinc-800" />;
   }
 
   const isSaved = Boolean(current);
@@ -63,24 +63,24 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
   };
 
   return (
-    <div className="rounded-2xl bg-white/[0.03] p-4 sm:p-5 ring-1 ring-white/10 backdrop-blur-sm space-y-3.5">
+    <div className="border-2 border-black dark:border-white bg-gray-50 dark:bg-zinc-900 p-3.5 sm:p-4 shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] space-y-3">
       {/* Card Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <BookmarkIcon className="size-4 text-violet-400" />
-          <span className="text-xs font-bold uppercase tracking-wider text-white/80">
-            Your Watch Status
+      <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-2">
+        <div className="flex items-center gap-1.5">
+          <BookmarkIcon className="size-4 text-black dark:text-white" />
+          <span className="text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+            Your Watch Progress
           </span>
         </div>
         {isSaved && (
-          <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-300 ring-1 ring-emerald-500/30">
+          <span className="border border-black dark:border-white bg-black dark:bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white dark:text-black">
             In Library
           </span>
         )}
       </div>
 
       {/* Segmented Status Selector */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 rounded-xl bg-black/40 p-1 ring-1 ring-white/10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 border border-black dark:border-white bg-white dark:bg-[#1a1b20] p-1">
         {STATUS_OPTIONS.map((opt) => {
           const isActive = status === opt.id;
           return (
@@ -89,10 +89,11 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
               type="button"
               onClick={() => setStatus(opt.id)}
               aria-pressed={isActive}
-              className={`rounded-lg py-1.5 sm:py-2 text-xs font-semibold transition-all ${isActive
-                  ? "bg-violet-600 text-white shadow-md"
-                  : "text-white/60 hover:text-white hover:bg-white/5"
-                }`}
+              className={`py-1.5 text-xs font-bold uppercase tracking-wider transition ${
+                isActive
+                  ? "bg-black dark:bg-white text-white dark:text-black shadow-[1.5px_1.5px_0px_#555555] dark:shadow-[1.5px_1.5px_0px_#aaaaaa]"
+                  : "text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800"
+              }`}
             >
               {opt.label}
             </button>
@@ -103,14 +104,14 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
       {/* Controls row: Episode stepper + Action buttons */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pt-1">
         {/* Episode Stepper */}
-        <div className="flex items-center gap-2.5">
-          <span className="text-xs font-medium text-white/60">Episode:</span>
-          <div className="flex items-center rounded-xl bg-white/10 p-0.5 ring-1 ring-white/15">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Episode:</span>
+          <div className="flex items-center border border-black dark:border-white bg-white dark:bg-[#1a1b20]">
             <button
               type="button"
               onClick={() => handleStepEpisode(-1)}
               disabled={episode <= 0}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold text-white/70 hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition"
+              className="flex h-8 w-8 items-center justify-center font-bold text-black dark:text-white hover:bg-gray-200 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:pointer-events-none transition"
               aria-label="Decrease episode"
             >
               −
@@ -123,17 +124,17 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
                 value={episode}
                 onChange={(e) => setEpisode(Math.max(0, Number(e.target.value)))}
                 aria-label="Episode progress"
-                className="w-10 bg-transparent text-center text-xs font-bold text-white focus:outline-none"
+                className="w-10 bg-transparent text-center text-xs font-bold text-black dark:text-white focus:outline-none"
               />
               {totalEpisodes && (
-                <span className="text-xs text-white/40 font-medium">/ {totalEpisodes}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-bold">/ {totalEpisodes}</span>
               )}
             </div>
             <button
               type="button"
               onClick={() => handleStepEpisode(1)}
               disabled={Boolean(totalEpisodes && episode >= totalEpisodes)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold text-white/70 hover:bg-white/15 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition"
+              className="flex h-8 w-8 items-center justify-center font-bold text-black dark:text-white hover:bg-gray-200 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:pointer-events-none transition"
               aria-label="Increase episode"
             >
               +
@@ -146,7 +147,7 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
           <button
             type="button"
             onClick={handleSave}
-            className="flex-1 sm:flex-initial h-9 rounded-xl bg-violet-600 px-4 text-xs font-bold text-white shadow-md hover:bg-violet-500 active:scale-95 transition"
+            className="flex-1 sm:flex-initial h-9 border border-black dark:border-white bg-black dark:bg-white px-4 text-xs font-bold uppercase tracking-wider text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa] hover:bg-gray-800 dark:hover:bg-gray-200 active:translate-x-0.5 active:translate-y-0.5 transition"
           >
             {isSaved ? "Update Progress" : "Save to Library"}
           </button>
@@ -154,7 +155,7 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
             <button
               type="button"
               onClick={handleRemove}
-              className="h-9 rounded-xl border border-red-500/40 px-3 text-xs font-semibold text-red-400 hover:bg-red-500/10 active:scale-95 transition"
+              className="h-9 border border-black dark:border-white bg-white dark:bg-[#1a1b20] px-3 text-xs font-bold uppercase tracking-wider text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition"
             >
               Remove
             </button>
@@ -164,7 +165,7 @@ export default function SaveButton({ mal_id, title, image, totalEpisodes }: Save
 
       {/* Confirmation feedback */}
       {feedback && (
-        <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-400 animate-in fade-in duration-150">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-black dark:text-white border border-black dark:border-white bg-white dark:bg-[#1a1b20] p-1.5 animate-in fade-in duration-150">
           <CheckIcon className="size-3.5" />
           <span>{feedback}</span>
         </div>

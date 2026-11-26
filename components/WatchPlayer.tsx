@@ -502,13 +502,13 @@ const handleSkipIntro = () => {
 };
 
 return (
-  <div className="relative mt-8 space-y-4 rounded-2xl bg-white/[0.03] p-3.5 sm:space-y-5 sm:rounded-3xl sm:p-6 ring-1 ring-white/10 backdrop-blur-sm">
+  <div className="relative space-y-4 border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] p-3.5 sm:p-6 shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff]">
     {/* Toast notification */}
     {saveToast && (
       <div
         role="status"
         aria-live="polite"
-        className="fixed bottom-5 left-1/2 z-50 flex items-center gap-1.5 -translate-x-1/2 rounded-full bg-violet-600/95 px-5 py-2.5 text-xs font-semibold text-white shadow-xl shadow-violet-950/50 ring-1 ring-white/20 backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-200"
+        className="fixed bottom-5 left-1/2 z-50 flex items-center gap-1.5 -translate-x-1/2 border-2 border-black bg-black px-5 py-2 text-xs font-black uppercase text-white shadow-[4px_4px_0px_#ffffff] animate-in fade-in duration-200"
       >
         <CheckIcon className="size-4 shrink-0 text-white" />
         <span>{saveToast}</span>
@@ -516,64 +516,66 @@ return (
     )}
 
     {/* Header Info */}
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b-2 border-black dark:border-white pb-3">
       <div>
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black dark:bg-white opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-black dark:bg-white" />
           </span>
-          <h2 className="text-lg font-bold text-white sm:text-xl">Watch Anime</h2>
-          <span className="rounded-full bg-violet-500/20 px-2.5 py-0.5 text-[11px] font-semibold text-violet-300 ring-1 ring-violet-500/30">
+          <h2 className="font-manga-title text-xl sm:text-2xl font-black text-black dark:text-white tracking-wide uppercase">
+            Watch Episode
+          </h2>
+          <span className="border-1.5 border-black dark:border-white bg-black dark:bg-white px-2 py-0.5 text-xs font-bold uppercase text-white dark:text-black shadow-[1.5px_1.5px_0px_#555555] dark:shadow-[1.5px_1.5px_0px_#aaaaaa]">
             Ep {episode}
           </span>
         </div>
-        <p className="mt-1 text-xs text-white/50">
+        <p className="mt-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
           {savedTime > 0 ? (
             <>
-              Resume point:{" "}
-              <span className="font-semibold text-emerald-400">{formatTime(savedTime)}</span>
+              Resume bookmark:{" "}
+              <strong className="text-black dark:text-white font-mono">{formatTime(savedTime)}</strong>
             </>
           ) : (
-            "Streaming available on multiple servers"
+            "Choose a streaming server below if video doesn't play automatically"
           )}
         </p>
       </div>
 
       {/* Server & Desktop Popout actions */}
       <div className="flex items-center gap-2">
-        {/* Server Select Dropdown - full-width on tiny screens */}
+        {/* Server Select Dropdown */}
         <div className="relative flex-1 sm:flex-initial">
           <select
             value={server}
             onChange={(e) => handleServerChange(e.target.value)}
             aria-label="Streaming Server"
-            className="h-10 sm:h-9 w-full rounded-xl bg-white/10 pl-3 pr-8 text-xs font-semibold text-white/90 ring-1 ring-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 cursor-pointer appearance-none transition hover:bg-white/15"
+            className="h-9 w-full border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] pl-3 pr-8 text-xs font-bold text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] focus:outline-none cursor-pointer appearance-none"
           >
             {SERVERS.map((srv) => (
-              <option key={srv.id} value={srv.id} className="bg-zinc-900 text-white">
+              <option key={srv.id} value={srv.id} className="bg-white dark:bg-zinc-900 text-black dark:text-white font-semibold">
                 {srv.name}
               </option>
             ))}
           </select>
-          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50">
+          <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-black dark:text-white">
             <ChevronDownIcon className="size-3" />
           </span>
         </div>
 
-        {/* Pop-out external player in new tab (works reliably on mobile and desktop) */}
+        {/* Pop-out external player in new tab */}
         <a
           href={currentEpisodeUrl}
           target="_blank"
           rel="noopener noreferrer"
           title="Open in new window"
-          className="flex h-10 sm:h-9 items-center justify-center gap-1.5 rounded-xl bg-white/10 px-3 text-xs font-semibold text-white/80 transition hover:bg-white/20 active:scale-95 shrink-0"
+          className="flex h-9 items-center justify-center gap-1.5 border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] px-3 text-xs font-bold uppercase text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] hover:bg-gray-100 dark:hover:bg-zinc-800 transition active:translate-x-0.5 active:translate-y-0.5 shrink-0"
         >
           <ExternalLinkIcon className="size-3.5" />
           <span>New Tab</span>
         </a>
 
-        {/* Desktop-only Float Window (window.open popouts do not work well on mobile) */}
+        {/* Desktop Float Window */}
         <button
           onClick={() => {
             window.open(
@@ -582,8 +584,8 @@ return (
               "width=854,height=480,left=100,top=100,resizable=yes,scrollbars=no,status=no,toolbar=no,menubar=no"
             );
           }}
-          title="Pop out a floating mini-player with subtitles preserved"
-          className="hidden sm:inline-flex h-9 items-center gap-1.5 rounded-xl bg-violet-600/30 px-3 text-xs font-semibold text-violet-200 ring-1 ring-violet-500/40 transition hover:bg-violet-600 hover:text-white active:scale-95 shrink-0"
+          title="Pop out a floating mini-player"
+          className="hidden sm:inline-flex h-9 items-center gap-1.5 border-2 border-black dark:border-white bg-black dark:bg-white px-3 text-xs font-bold uppercase text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa] hover:bg-gray-800 dark:hover:bg-gray-200 transition active:translate-x-0.5 active:translate-y-0.5 shrink-0"
         >
           <MiniPlayerIcon className="size-3.5" />
           <span>Mini Player</span>
@@ -591,8 +593,8 @@ return (
       </div>
     </div>
 
-    {/* Embedded Video Player */}
-    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black shadow-2xl ring-1 ring-white/10 sm:rounded-2xl">
+    {/* Embedded Video Player - framed in ink */}
+    <div className="relative aspect-video w-full overflow-hidden border-2 border-black dark:border-white bg-black shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff]">
       <iframe
         ref={iframeRef}
         key={`${activeServer.id}-${playerEpisode}`}
@@ -606,14 +608,14 @@ return (
       />
     </div>
 
-    {/* Mobile-friendly Quick Prev / Next Episode Bar & Skip Intro */}
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/[0.04] p-2 ring-1 ring-white/10 sm:p-2.5">
-      <div className="flex items-center gap-1.5 flex-1 sm:flex-initial">
+    {/* Quick Prev / Next Episode Bar & Skip Intro */}
+    <div className="flex flex-wrap items-center justify-between gap-2 border-2 border-black dark:border-white bg-gray-50 dark:bg-zinc-900 p-2.5 sm:p-3 shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff]">
+      <div className="flex items-center gap-2 flex-1 sm:flex-initial">
         <button
           onClick={() => handleSelectEpisode(episode - 1)}
           disabled={episode <= 1}
           aria-label="Previous episode"
-          className="flex h-10 flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-lg bg-white/10 px-3 text-xs font-bold text-white transition hover:bg-white/20 active:scale-95 disabled:pointer-events-none disabled:opacity-30 sm:px-4"
+          className="flex h-9 flex-1 sm:flex-initial items-center justify-center gap-1.5 border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] px-3 text-xs font-bold uppercase text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition active:translate-x-0.5 active:translate-y-0.5 disabled:pointer-events-none disabled:opacity-30 sm:px-4"
         >
           <ChevronLeftIcon className="size-4" />
           <span>Prev Ep</span>
@@ -623,23 +625,23 @@ return (
           type="button"
           onClick={handleSkipIntro}
           title={opInterval ? `Skip intro to ${formatTime(opInterval.endTime)}` : "Skip intro"}
-          className="flex h-10 flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-lg bg-amber-500/15 px-3 text-xs font-bold text-amber-300 ring-1 ring-amber-500/30 transition hover:bg-amber-500/25 active:scale-95"
+          className="flex h-9 flex-1 sm:flex-initial items-center justify-center gap-1.5 border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] px-3 text-xs font-bold uppercase text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] hover:bg-yellow-100 dark:hover:bg-zinc-800 transition active:translate-x-0.5 active:translate-y-0.5"
         >
           <FastForwardIcon className="size-3.5" />
           <span>Skip Intro</span>
         </button>
       </div>
 
-      <div className="text-center text-xs font-medium text-white/70 order-last sm:order-none w-full sm:w-auto">
-        <span className="font-bold text-white">Episode {episode}</span>
-        {totalEpisodes && <span className="text-white/40"> / {totalEpisodes}</span>}
+      <div className="text-center font-manga-title text-xs sm:text-sm font-bold text-black dark:text-white order-last sm:order-none w-full sm:w-auto tracking-wide uppercase">
+        <span>Episode {episode}</span>
+        {totalEpisodes && <span className="text-gray-500 dark:text-gray-400 font-sans font-semibold"> / {totalEpisodes}</span>}
       </div>
 
       <button
         onClick={() => handleSelectEpisode(episode + 1)}
         disabled={Boolean(totalEpisodes && episode >= totalEpisodes)}
         aria-label="Next episode"
-        className="flex h-10 flex-1 sm:flex-initial items-center justify-center gap-1.5 rounded-lg bg-violet-600 px-3 text-xs font-bold text-white transition hover:bg-violet-500 active:scale-95 disabled:pointer-events-none disabled:opacity-30 sm:px-4 ml-auto sm:ml-0"
+        className="flex h-9 flex-1 sm:flex-initial items-center justify-center gap-1.5 border-2 border-black dark:border-white bg-black dark:bg-white px-4 text-xs font-bold uppercase text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa] hover:bg-gray-800 dark:hover:bg-gray-200 transition active:translate-x-0.5 active:translate-y-0.5 disabled:pointer-events-none disabled:opacity-30 ml-auto sm:ml-0"
       >
         <span>Next Ep</span>
         <ChevronRightIcon className="size-4" />
@@ -647,27 +649,27 @@ return (
     </div>
 
     {/* Ad-Shield & Playback Tip */}
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl bg-violet-500/10 px-3.5 py-2.5 text-[11px] text-violet-200 ring-1 ring-violet-500/20">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] px-3.5 py-2.5 text-xs text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff]">
       <div className="flex items-center gap-2">
-        <span className="flex h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
-        <span>
-          <strong>Ad-Shield Active:</strong> Pop-ups and new tab redirects are blocked. For a 100% ad-free experience, we recommend <strong>Brave Browser</strong> or <strong>uBlock Origin</strong>.
+        <span className="flex h-2 w-2 bg-black dark:bg-white shrink-0" />
+        <span className="font-medium text-gray-700 dark:text-gray-300">
+          <strong className="text-black dark:text-white font-bold uppercase tracking-wider">Ad-Shield Active:</strong> Pop-ups and redirects blocked. For the cleanest playback, we recommend <strong>Brave Browser</strong> or <strong>uBlock Origin</strong>.
         </span>
       </div>
-      <span className="text-white/45 text-[10px] shrink-0">
-        Video issue? Switch servers above or open in New Tab
+      <span className="text-gray-500 dark:text-gray-400 font-semibold text-[11px] shrink-0">
+        Switch server above if a video is slow
       </span>
     </div>
 
     {/* Timestamp / Checkpoint Bar */}
-    <div className="flex flex-col gap-3 rounded-xl bg-white/[0.04] p-3 sm:rounded-2xl sm:p-4 ring-1 ring-white/10 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-2 border-black dark:border-white bg-gray-50 dark:bg-zinc-900 p-3 sm:p-4 shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-white/70">
-          <BookmarkIcon className="size-3.5 text-violet-400" />
+        <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+          <BookmarkIcon className="size-3.5" />
           <span>Bookmark:</span>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <input
             type="number"
             inputMode="numeric"
@@ -677,9 +679,9 @@ return (
             value={minutesInput}
             onChange={(e) => setMinutesInput(e.target.value)}
             aria-label="Bookmark minutes"
-            className="h-10 sm:h-8 w-14 rounded-lg bg-white/10 px-2 text-center text-xs text-white focus:outline-none focus:ring-1 focus:ring-violet-400"
+            className="h-8 w-14 border border-black dark:border-white bg-white dark:bg-[#111215] px-2 text-center text-xs font-bold text-black dark:text-white focus:outline-none"
           />
-          <span className="text-white/40 font-bold">:</span>
+          <span className="text-black dark:text-white font-bold">:</span>
           <input
             type="number"
             inputMode="numeric"
@@ -690,22 +692,22 @@ return (
             value={secondsInput}
             onChange={(e) => setSecondsInput(e.target.value)}
             aria-label="Bookmark seconds"
-            className="h-10 sm:h-8 w-14 rounded-lg bg-white/10 px-2 text-center text-xs text-white focus:outline-none focus:ring-1 focus:ring-violet-400"
+            className="h-8 w-14 border border-black dark:border-white bg-white dark:bg-[#111215] px-2 text-center text-xs font-bold text-black dark:text-white focus:outline-none"
           />
         </div>
 
         <button
           onClick={handleSaveTimestamp}
-          className="h-10 sm:h-8 flex-1 sm:flex-initial rounded-xl bg-violet-600 px-4 text-xs font-semibold text-white shadow transition hover:bg-violet-500 active:scale-95"
+          className="h-8 flex-1 sm:flex-initial border border-black dark:border-white bg-black dark:bg-white px-4 text-xs font-bold uppercase tracking-wider text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa] hover:bg-gray-800 dark:hover:bg-gray-200 active:translate-x-0.5 active:translate-y-0.5 transition"
         >
           Save Bookmark
         </button>
       </div>
 
       {savedTime > 0 && (
-        <div className="flex items-center gap-2 text-xs text-white/60">
-          <span>Last bookmark:</span>
-          <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 font-bold text-emerald-400 ring-1 ring-emerald-500/30">
+        <div className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-300">
+          <span>Saved point:</span>
+          <span className="border border-black dark:border-white bg-white dark:bg-black px-2 py-0.5 font-bold font-mono text-black dark:text-white">
             {formatTime(savedTime)}
           </span>
         </div>
@@ -713,11 +715,13 @@ return (
     </div>
 
     {/* Episode Selection Section */}
-    <div className="space-y-3 pt-1">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-white/70">
-        <span>Select Episode</span>
+    <div className="space-y-3 pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-black dark:border-white pb-2">
+        <h3 className="font-manga-title text-base sm:text-lg font-black text-black dark:text-white tracking-wide uppercase">
+          Select Episode
+        </h3>
 
-        {/* Quick jump input for quick mobile navigation */}
+        {/* Quick jump input */}
         {effectiveMaxEp > 12 && (
           <form onSubmit={handleJumpToEpisode} className="flex items-center gap-1.5">
             <input
@@ -728,11 +732,11 @@ return (
               placeholder="Ep #"
               value={jumpInput}
               onChange={(e) => setJumpInput(e.target.value)}
-              className="h-7 w-16 rounded-lg bg-white/10 px-2 text-center text-xs text-white placeholder-white/40 focus:outline-none focus:ring-1 focus:ring-violet-400"
+              className="h-7 w-16 border border-black dark:border-white bg-white dark:bg-[#111215] px-2 text-center text-xs font-bold text-black dark:text-white placeholder-gray-400 focus:outline-none"
             />
             <button
               type="submit"
-              className="h-7 rounded-lg bg-white/10 px-2.5 text-[11px] font-medium text-white hover:bg-white/20 active:scale-95 transition"
+              className="h-7 border border-black dark:border-white bg-black dark:bg-white px-2.5 text-[11px] font-bold uppercase text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 transition"
             >
               Go
             </button>
@@ -742,7 +746,7 @@ return (
 
       {/* Range Tabs if anime has more than 25 episodes */}
       {chunkCount > 1 && (
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
           {Array.from({ length: chunkCount }, (_, idx) => {
             const start = idx * EPISODES_PER_CHUNK + 1;
             const end = Math.min(start + EPISODES_PER_CHUNK - 1, effectiveMaxEp);
@@ -752,10 +756,11 @@ return (
                 key={idx}
                 type="button"
                 onClick={() => setSelectedChunk(idx)}
-                className={`h-8 rounded-lg px-2.5 text-xs font-medium whitespace-nowrap transition-all ${isCurrent
-                    ? "bg-violet-600 text-white shadow-md ring-1 ring-violet-400"
-                    : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
-                  }`}
+                className={`h-7 px-2.5 text-xs font-bold uppercase tracking-wider border transition-all ${
+                  isCurrent
+                    ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa]"
+                    : "border-black dark:border-white bg-white dark:bg-[#1a1b20] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 shadow-[1.5px_1.5px_0px_#000000] dark:shadow-[1.5px_1.5px_0px_#ffffff]"
+                }`}
               >
                 {start}–{end}
               </button>
@@ -764,18 +769,19 @@ return (
         </div>
       )}
 
-      {/* Episode Grid with responsive column layout and comfortable tap targets */}
-      <div className="grid grid-cols-5 gap-2 max-h-56 overflow-y-auto pr-1 sm:grid-cols-8 md:grid-cols-10">
+      {/* Episode Grid with responsive column layout */}
+      <div className="grid grid-cols-5 gap-1.5 sm:gap-2 max-h-60 overflow-y-auto pr-1 sm:grid-cols-8 md:grid-cols-10">
         {chunkEpisodes.map((epNum) => {
           const isActive = epNum === episode;
           return (
             <button
               key={epNum}
               onClick={() => handleSelectEpisode(epNum)}
-              className={`flex h-10 items-center justify-center rounded-xl text-xs font-bold transition-all active:scale-95 ${isActive
-                  ? "bg-violet-600 text-white shadow-lg ring-2 ring-violet-400/90 scale-105"
-                  : "bg-white/5 text-white/70 hover:bg-white/15 ring-1 ring-white/10"
-                }`}
+              className={`flex h-10 items-center justify-center text-xs font-bold transition-all border-2 ${
+                isActive
+                  ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa] font-black scale-105"
+                  : "border-black dark:border-white bg-white dark:bg-[#1a1b20] text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] hover:bg-gray-100 dark:hover:bg-zinc-800 hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0"
+              }`}
             >
               {epNum}
             </button>
