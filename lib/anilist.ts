@@ -234,10 +234,10 @@ const MEDIA_FIELDS = `
 `;
 
 /** Top anime by score */
-export async function fetchTopAnimeFromAniList(limit = 12): Promise<AnimeBase[]> {
+export async function fetchTopAnimeFromAniList(page = 1, limit = 24): Promise<AnimeBase[]> {
   const query = `
-    query GetTopAnime($perPage: Int) {
-      Page(page: 1, perPage: $perPage) {
+    query GetTopAnime($page: Int, $perPage: Int) {
+      Page(page: $page, perPage: $perPage) {
         media(type: ANIME, sort: SCORE_DESC) {
           ${MEDIA_FIELDS}
         }
@@ -251,15 +251,37 @@ export async function fetchTopAnimeFromAniList(limit = 12): Promise<AnimeBase[]>
     };
   }
 
-  const data = await anilistRequest<Response>(query, { perPage: limit }, 3600);
+  const data = await anilistRequest<Response>(query, { page, perPage: limit }, 3600);
+  return data.Page.media.map(mapAniListToAnimeBase);
+}
+
+/** Most popular anime of all time */
+export async function fetchPopularAnimeFromAniList(page = 1, limit = 24): Promise<AnimeBase[]> {
+  const query = `
+    query GetPopularAnime($page: Int, $perPage: Int) {
+      Page(page: $page, perPage: $perPage) {
+        media(type: ANIME, sort: POPULARITY_DESC) {
+          ${MEDIA_FIELDS}
+        }
+      }
+    }
+  `;
+
+  interface Response {
+    Page: {
+      media: AniListMedia[];
+    };
+  }
+
+  const data = await anilistRequest<Response>(query, { page, perPage: limit }, 3600);
   return data.Page.media.map(mapAniListToAnimeBase);
 }
 
 /** Currently airing seasonal anime by popularity */
-export async function fetchSeasonalAnimeFromAniList(limit = 12): Promise<AnimeBase[]> {
+export async function fetchSeasonalAnimeFromAniList(page = 1, limit = 24): Promise<AnimeBase[]> {
   const query = `
-    query GetSeasonalAnime($perPage: Int) {
-      Page(page: 1, perPage: $perPage) {
+    query GetSeasonalAnime($page: Int, $perPage: Int) {
+      Page(page: $page, perPage: $perPage) {
         media(type: ANIME, status: RELEASING, sort: POPULARITY_DESC) {
           ${MEDIA_FIELDS}
         }
@@ -273,15 +295,15 @@ export async function fetchSeasonalAnimeFromAniList(limit = 12): Promise<AnimeBa
     };
   }
 
-  const data = await anilistRequest<Response>(query, { perPage: limit }, 3600);
+  const data = await anilistRequest<Response>(query, { page, perPage: limit }, 3600);
   return data.Page.media.map(mapAniListToAnimeBase);
 }
 
 /** Search anime by title */
-export async function searchAnimeFromAniList(queryText: string, limit = 20): Promise<AnimeBase[]> {
+export async function searchAnimeFromAniList(queryText: string, page = 1, limit = 24): Promise<AnimeBase[]> {
   const query = `
-    query SearchAnime($search: String, $perPage: Int) {
-      Page(page: 1, perPage: $perPage) {
+    query SearchAnime($search: String, $page: Int, $perPage: Int) {
+      Page(page: $page, perPage: $perPage) {
         media(type: ANIME, search: $search, sort: SEARCH_MATCH) {
           ${MEDIA_FIELDS}
         }
@@ -295,15 +317,15 @@ export async function searchAnimeFromAniList(queryText: string, limit = 20): Pro
     };
   }
 
-  const data = await anilistRequest<Response>(query, { search: queryText, perPage: limit }, 600);
+  const data = await anilistRequest<Response>(query, { search: queryText, page, perPage: limit }, 600);
   return data.Page.media.map(mapAniListToAnimeBase);
 }
 
 /** Fetch anime by genre sorted by popularity */
-export async function fetchAnimeByGenreFromAniList(genre: string, limit = 18): Promise<AnimeBase[]> {
+export async function fetchAnimeByGenreFromAniList(genre: string, page = 1, limit = 24): Promise<AnimeBase[]> {
   const query = `
-    query GetAnimeByGenre($genre: String, $perPage: Int) {
-      Page(page: 1, perPage: $perPage) {
+    query GetAnimeByGenre($genre: String, $page: Int, $perPage: Int) {
+      Page(page: $page, perPage: $perPage) {
         media(type: ANIME, genre: $genre, sort: POPULARITY_DESC) {
           ${MEDIA_FIELDS}
         }
@@ -317,7 +339,7 @@ export async function fetchAnimeByGenreFromAniList(genre: string, limit = 18): P
     };
   }
 
-  const data = await anilistRequest<Response>(query, { genre, perPage: limit }, 3600);
+  const data = await anilistRequest<Response>(query, { genre, page, perPage: limit }, 3600);
   return data.Page.media.map(mapAniListToAnimeBase);
 }
 

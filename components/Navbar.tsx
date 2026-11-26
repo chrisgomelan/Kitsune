@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookmarkIcon, CloseIcon, HomeIcon, KitsuneLogo, SearchIcon } from "@/components/Icons";
+import { BookmarkIcon, CloseIcon, CompassIcon, HomeIcon, KitsuneLogo, SearchIcon } from "@/components/Icons";
 import LiveSearch from "@/components/LiveSearch";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -16,57 +17,72 @@ export default function Navbar() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0b0c14]/90 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] shadow-[0_2px_0px_#000000] dark:shadow-[0_2px_0px_#ffffff]">
       <nav
-        className="mx-auto flex max-w-7xl items-center justify-between px-3.5 py-2.5 sm:px-6 sm:py-3"
+        className="mx-auto flex max-w-7xl items-center justify-between px-3 py-2 sm:px-6 sm:py-3"
         aria-label="Main navigation"
       >
-        {/* Brand */}
+        {/* Brand with Manga / Ink aesthetic */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 text-lg font-bold tracking-tight text-white transition hover:text-violet-300 sm:text-xl shrink-0"
+          className="flex items-center gap-1.5 sm:gap-2 group shrink-0"
         >
-          <KitsuneLogo className="size-6 text-violet-400" />
-          <span>Kitsune</span>
+          <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center border-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] group-hover:bg-white dark:group-hover:bg-black group-hover:text-black dark:group-hover:text-white transition-colors">
+            <KitsuneLogo className="size-4 sm:size-5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-manga-title text-base sm:text-2xl font-black tracking-wider text-black dark:text-white leading-none">
+              KITSUNE
+            </span>
+            <span className="hidden sm:inline text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#555555] dark:text-[#aaaaaa]">
+              Anime Tracker
+            </span>
+          </div>
         </Link>
 
-        {/* Center / Navigation Links with Icons */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        {/* Center / Navigation Tabs & Theme Toggle */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <NavLink href="/" active={pathname === "/"}>
-            <HomeIcon className="size-3.5" />
-            <span>Home</span>
+            <HomeIcon className="size-4 shrink-0" />
+            <span className="hidden sm:inline">Home</span>
+          </NavLink>
+          <NavLink href="/search?type=popular" active={pathname.startsWith("/search")}>
+            <CompassIcon className="size-4 shrink-0" />
+            <span className="hidden sm:inline">Catalog</span>
           </NavLink>
           <NavLink href="/library" active={pathname.startsWith("/library")}>
-            <BookmarkIcon className="size-3.5" />
-            <span className="sm:hidden">Library</span>
-            <span className="hidden sm:inline">My Library</span>
+            <BookmarkIcon className="size-4 shrink-0" />
+            <span className="hidden sm:inline">Library</span>
           </NavLink>
+
+          {/* Theme Switcher Toggle (Paper / Dark mode) */}
+          <ThemeToggle />
+
+          {/* Mobile Search Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setIsSearchOpen((prev) => !prev)}
+            aria-expanded={isSearchOpen}
+            aria-label={isSearchOpen ? "Close search bar" : "Open search bar"}
+            className={`flex md:hidden h-8 w-8 sm:h-10 sm:w-10 items-center justify-center border-2 border-black dark:border-white text-black dark:text-white font-bold transition active:translate-x-0.5 active:translate-y-0.5 ${
+              isSearchOpen
+                ? "bg-black text-white dark:bg-white dark:text-black"
+                : "bg-white dark:bg-[#1a1b20] hover:bg-gray-100 dark:hover:bg-zinc-800 shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff]"
+            }`}
+          >
+            {isSearchOpen ? <CloseIcon className="size-3.5" /> : <SearchIcon className="size-3.5" />}
+          </button>
         </div>
 
-        {/* Desktop AJAX Live Search */}
+        {/* Desktop Search Bar */}
         <div className="hidden md:block">
           <LiveSearch variant="desktop" />
         </div>
-
-        {/* Mobile Search Toggle Button */}
-        <button
-          type="button"
-          onClick={() => setIsSearchOpen((prev) => !prev)}
-          aria-expanded={isSearchOpen}
-          aria-label={isSearchOpen ? "Close search bar" : "Open search bar"}
-          className={`flex md:hidden h-9 w-9 items-center justify-center rounded-xl text-sm font-semibold transition active:scale-95 ${
-            isSearchOpen
-              ? "bg-violet-600 text-white ring-1 ring-violet-400"
-              : "bg-white/10 text-white/80 hover:bg-white/15"
-          }`}
-        >
-          {isSearchOpen ? <CloseIcon className="size-4" /> : <SearchIcon className="size-4" />}
-        </button>
       </nav>
 
-      {/* Mobile Expandable Live Search */}
+      {/* Mobile Search Dropdown */}
       {isSearchOpen && (
-        <div className="border-t border-white/5 bg-[#0b0c14]/95 px-3.5 py-2.5 md:hidden animate-in fade-in slide-in-from-top-1 duration-150">
+        <div className="border-t-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] px-3 py-2.5 md:hidden">
           <LiveSearch
             variant="mobile"
             autoFocus
@@ -90,11 +106,11 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition sm:px-3 sm:py-2 sm:text-sm ${
+      className={`flex items-center justify-center gap-1.5 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-bold uppercase tracking-wider transition border-2 border-black dark:border-white min-h-[32px] sm:min-h-[40px] ${
         active
-          ? "bg-white/15 text-white font-semibold ring-1 ring-white/20 shadow-sm"
-          : "text-white/70 hover:bg-white/8 hover:text-white"
-      } focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-400`}
+          ? "bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa]"
+          : "bg-white dark:bg-[#1a1b20] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff]"
+      }`}
     >
       {children}
     </Link>
