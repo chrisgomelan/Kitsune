@@ -84,6 +84,36 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const rawGenre = (params.genre ?? params.category ?? "").trim();
   const rawType = (params.type ?? "").trim().toLowerCase();
 
+  // Check for restricted / adult searches
+  const adultTerms = ["hentai", "erotica", "porn", "xxx", "r18", "nsfw"];
+  const isAdultQuery =
+    adultTerms.some((t) => rawQ.toLowerCase().includes(t)) ||
+    rawGenre.toLowerCase() === "hentai" ||
+    rawGenre.toLowerCase() === "erotica";
+
+  if (isAdultQuery) {
+    return (
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 py-12 text-center space-y-4">
+        <div className="bg-white dark:bg-[#1a1b20] border-2 border-black dark:border-white p-8 max-w-md mx-auto shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff]">
+          <h2 className="font-manga-title text-xl font-black text-black dark:text-white uppercase">
+            Content Restricted
+          </h2>
+          <p className="mt-2 text-xs font-semibold text-gray-600 dark:text-gray-400">
+            Adult and explicit 18+ content is restricted on Kitsune.
+          </p>
+          <div className="mt-4">
+            <Link
+              href="/"
+              className="inline-block px-4 py-2 border-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-wider shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa]"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Normalize user intent: if query is "popular", "top", "all", or a genre name, treat as browsing
   let activeGenre = rawGenre;
   let activeType = rawType;

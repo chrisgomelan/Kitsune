@@ -80,7 +80,7 @@ export async function getTopAnime(limit = 12, page = 1): Promise<AnimeBase[]> {
     const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
       "/top/anime",
       3600,
-      { page, limit }
+      { page, limit, sfw: true, genres_exclude: "12,49" }
     );
     return data.data;
   } catch {
@@ -106,7 +106,7 @@ export async function getPopularAnime(limit = 24, page = 1): Promise<AnimeBase[]
     const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
       "/top/anime",
       3600,
-      { filter: "bypopularity", page, limit }
+      { filter: "bypopularity", page, limit, sfw: true, genres_exclude: "12,49" }
     );
     return data.data;
   } catch {
@@ -132,7 +132,7 @@ export async function getSeasonalAnime(limit = 12, page = 1): Promise<AnimeBase[
     const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
       "/seasons/now",
       3600,
-      { page, limit }
+      { page, limit, sfw: true, genres_exclude: "12,49" }
     );
     return data.data;
   } catch {
@@ -147,6 +147,12 @@ export async function searchAnime(
   limit = 20,
   page = 1
 ): Promise<AnimeBase[]> {
+  const lower = query.toLowerCase();
+  const adultTerms = ["hentai", "erotica", "porn", "xxx", "r18", "nsfw"];
+  if (adultTerms.some((t) => lower.includes(t))) {
+    return [];
+  }
+
   if (USE_MOCK) {
     const q = query.toLowerCase();
     return [...MOCK_TOP_ANIME, ...MOCK_SEASONAL_ANIME]
@@ -171,7 +177,7 @@ export async function searchAnime(
     const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
       "/anime",
       600,
-      { q: query, sfw: true, page, limit }
+      { q: query, sfw: true, genres_exclude: "12,49", page, limit }
     );
     return data.data;
   } catch {
@@ -193,6 +199,11 @@ export async function getAnimeByGenre(
   limit = 18,
   page = 1
 ): Promise<AnimeBase[]> {
+  const lower = genre.toLowerCase();
+  if (lower === "hentai" || lower === "erotica") {
+    return [];
+  }
+
   try {
     if (USE_MOCK) {
       return [...MOCK_TOP_ANIME, ...MOCK_SEASONAL_ANIME]
@@ -215,7 +226,7 @@ export async function getAnimeByGenre(
       const data = await jikanFetch<JikanPaginatedResponse<AnimeBase>>(
         "/anime",
         3600,
-        { q: genre, order_by: "popularity", sort: "desc", page, limit }
+        { q: genre, order_by: "popularity", sort: "desc", page, limit, sfw: true, genres_exclude: "12,49" }
       );
       if (data?.data && data.data.length > 0) return data.data;
     } catch {
@@ -252,6 +263,14 @@ export async function getAnimeFull(id: number): Promise<AnimeFull> {
       `/anime/${id}/full`,
       86400
     );
+    if (
+      data?.data?.rating?.includes("Rx") ||
+      data?.data?.genres?.some(
+        (g) => g.name.toLowerCase() === "hentai" || g.name.toLowerCase() === "erotica"
+      )
+    ) {
+      throw new Error("This content is restricted.");
+    }
     return data.data;
   } catch {
     console.warn(`[api] getAnimeFull(${id}): All APIs unreachable, using offline mock data`);

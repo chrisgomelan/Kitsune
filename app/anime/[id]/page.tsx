@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import { getAnimeFull } from "@/lib/jikan";
 import SaveButton from "@/components/SaveButton";
 import WatchPlayer from "@/components/WatchPlayer";
@@ -14,22 +15,33 @@ export async function generateMetadata({
   params,
 }: AnimeDetailPageProps): Promise<Metadata> {
   const { id } = await params;
-  const anime = await getAnimeFull(Number(id));
-  const title = anime.title_english ?? anime.title;
-  return {
-    title,
-    description: anime.synopsis?.slice(0, 155) ?? `Details for ${title}.`,
-    openGraph: {
+  try {
+    const anime = await getAnimeFull(Number(id));
+    const title = anime.title_english ?? anime.title;
+    return {
       title,
-      description: anime.synopsis?.slice(0, 155) ?? "",
-      images: [anime.images.jpg.large_image_url ?? anime.images.jpg.image_url],
-    },
-  };
+      description: anime.synopsis?.slice(0, 155) ?? `Details for ${title}.`,
+      openGraph: {
+        title,
+        description: anime.synopsis?.slice(0, 155) ?? "",
+        images: [anime.images.jpg.large_image_url ?? anime.images.jpg.image_url],
+      },
+    };
+  } catch {
+    return {
+      title: "Content Unavailable - Kitsune",
+    };
+  }
 }
 
 export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) {
   const { id } = await params;
-  const anime = await getAnimeFull(Number(id));
+  let anime;
+  try {
+    anime = await getAnimeFull(Number(id));
+  } catch {
+    notFound();
+  }
   const title = anime.title_english ?? anime.title;
   const imageUrl = anime.images.jpg.large_image_url ?? anime.images.jpg.image_url;
 
