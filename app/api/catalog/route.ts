@@ -20,6 +20,11 @@ const MEDIA_FIELDS = `
   averageScore
   popularity
   episodes
+  nextAiringEpisode {
+    episode
+    timeUntilAiring
+    airingAt
+  }
   status
   format
   genres
@@ -62,6 +67,15 @@ function mapAniList(media: any): AnimeBase {
     scored_by: media.popularity ?? 0,
     rank: null,
     episodes: media.episodes ?? null,
+    aired_episodes:
+      media.status === "FINISHED"
+        ? (media.episodes ?? null)
+        : media.status === "NOT_YET_RELEASED"
+        ? 0
+        : media.nextAiringEpisode?.episode
+        ? Math.max(0, media.nextAiringEpisode.episode - 1)
+        : (media.episodes ?? null),
+    next_airing_episode: media.nextAiringEpisode ?? null,
     status: formattedStatus,
     type: media.format ?? "TV",
     genres: (media.genres ?? []).map((name: string, i: number) => ({

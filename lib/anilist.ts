@@ -29,6 +29,11 @@ interface AniListMedia {
   averageScore?: number | null;
   popularity?: number | null;
   episodes?: number | null;
+  nextAiringEpisode?: {
+    episode: number;
+    timeUntilAiring?: number;
+    airingAt?: number;
+  } | null;
   status?: string | null;
   format?: string | null;
   genres?: string[] | null;
@@ -85,6 +90,8 @@ function cleanSynopsis(raw?: string | null): string | null {
   return raw
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
@@ -114,6 +121,15 @@ export function mapAniListToAnimeBase(media: AniListMedia): AnimeBase {
     scored_by: media.popularity ?? 0,
     rank: null,
     episodes: media.episodes ?? null,
+    aired_episodes:
+      media.status === "FINISHED"
+        ? (media.episodes ?? null)
+        : media.status === "NOT_YET_RELEASED"
+        ? 0
+        : media.nextAiringEpisode?.episode
+        ? Math.max(0, media.nextAiringEpisode.episode - 1)
+        : (media.episodes ?? null),
+    next_airing_episode: media.nextAiringEpisode ?? null,
     status: formatStatus(media.status),
     type: media.format ?? "TV",
     genres: (media.genres ?? []).map((name, i) => ({
@@ -204,6 +220,11 @@ const MEDIA_FIELDS = `
   averageScore
   popularity
   episodes
+  nextAiringEpisode {
+    episode
+    timeUntilAiring
+    airingAt
+  }
   status
   format
   genres

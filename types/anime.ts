@@ -77,6 +77,12 @@ export interface AnimeBase {
   scored_by: number | null;
   rank: number | null;
   episodes: number | null;
+  aired_episodes?: number | null;
+  next_airing_episode?: {
+    episode: number;
+    timeUntilAiring?: number;
+    airingAt?: number;
+  } | null;
   status: string;
   type: string | null;
   genres: JikanGenre[];
