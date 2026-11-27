@@ -29,6 +29,12 @@ interface AniListMedia {
   averageScore?: number | null;
   popularity?: number | null;
   episodes?: number | null;
+  isAdult?: boolean | null;
+  nextAiringEpisode?: {
+    episode: number;
+    timeUntilAiring?: number;
+    airingAt?: number;
+  } | null;
   status?: string | null;
   format?: string | null;
   genres?: string[] | null;
@@ -53,6 +59,18 @@ interface AniListMedia {
   } | null;
   source?: string | null;
   duration?: number | null;
+}
+
+export function isAdultContent(media: {
+  isAdult?: boolean | null;
+  genres?: (string | { name: string })[] | null;
+}): boolean {
+  if (media.isAdult === true) return true;
+  if (!media.genres) return false;
+  return media.genres.some((g) => {
+    const name = typeof g === "string" ? g.toLowerCase() : g.name.toLowerCase();
+    return name === "hentai" || name === "erotica";
+  });
 }
 
 function formatDate(dateObj?: { year?: number | null; month?: number | null; day?: number | null } | null): string | null {
@@ -85,6 +103,8 @@ function cleanSynopsis(raw?: string | null): string | null {
   return raw
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<[^>]+>/g, "")
+    .replace(/\r\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
@@ -114,6 +134,15 @@ export function mapAniListToAnimeBase(media: AniListMedia): AnimeBase {
     scored_by: media.popularity ?? 0,
     rank: null,
     episodes: media.episodes ?? null,
+    aired_episodes:
+      media.status === "FINISHED"
+        ? (media.episodes ?? null)
+        : media.status === "NOT_YET_RELEASED"
+        ? 0
+        : media.nextAiringEpisode?.episode
+        ? Math.max(0, media.nextAiringEpisode.episode - 1)
+        : (media.episodes ?? null),
+    next_airing_episode: media.nextAiringEpisode ?? null,
     status: formatStatus(media.status),
     type: media.format ?? "TV",
     genres: (media.genres ?? []).map((name, i) => ({
@@ -204,6 +233,12 @@ const MEDIA_FIELDS = `
   averageScore
   popularity
   episodes
+  isAdult
+  nextAiringEpisode {
+    episode
+    timeUntilAiring
+    airingAt
+  }
   status
   format
   genres
@@ -238,7 +273,7 @@ export async function fetchTopAnimeFromAniList(page = 1, limit = 24): Promise<An
   const query = `
     query GetTopAnime($page: Int, $perPage: Int) {
       Page(page: $page, perPage: $perPage) {
-        media(type: ANIME, sort: SCORE_DESC) {
+        media(type: ANIME, isAdult: false, sort: SCORE_DESC) {
           ${MEDIA_FIELDS}
         }
       }
@@ -252,7 +287,7 @@ export async function fetchTopAnimeFromAniList(page = 1, limit = 24): Promise<An
   }
 
   const data = await anilistRequest<Response>(query, { page, perPage: limit }, 3600);
-  return data.Page.media.map(mapAniListToAnimeBase);
+  return data.Page.media.filter((m) => !isAdultContent(m)).map(mapAniListToAnimeBase);
 }
 
 /** Most popular anime of all time */
@@ -260,7 +295,7 @@ export async function fetchPopularAnimeFromAniList(page = 1, limit = 24): Promis
   const query = `
     query GetPopularAnime($page: Int, $perPage: Int) {
       Page(page: $page, perPage: $perPage) {
-        media(type: ANIME, sort: POPULARITY_DESC) {
+        media(type: ANIME, isAdult: false, sort: POPULARITY_DESC) {
           ${MEDIA_FIELDS}
         }
       }
@@ -274,7 +309,7 @@ export async function fetchPopularAnimeFromAniList(page = 1, limit = 24): Promis
   }
 
   const data = await anilistRequest<Response>(query, { page, perPage: limit }, 3600);
-  return data.Page.media.map(mapAniListToAnimeBase);
+  return data.Page.media.filter((m) => !isAdultContent(m)).map(mapAniListToAnimeBase);
 }
 
 /** Currently airing seasonal anime by popularity */
@@ -282,7 +317,7 @@ export async function fetchSeasonalAnimeFromAniList(page = 1, limit = 24): Promi
   const query = `
     query GetSeasonalAnime($page: Int, $perPage: Int) {
       Page(page: $page, perPage: $perPage) {
-        media(type: ANIME, status: RELEASING, sort: POPULARITY_DESC) {
+        media(type: ANIME, isAdult: false, status: RELEASING, sort: POPULARITY_DESC) {
           ${MEDIA_FIELDS}
         }
       }
@@ -296,15 +331,21 @@ export async function fetchSeasonalAnimeFromAniList(page = 1, limit = 24): Promi
   }
 
   const data = await anilistRequest<Response>(query, { page, perPage: limit }, 3600);
-  return data.Page.media.map(mapAniListToAnimeBase);
+  return data.Page.media.filter((m) => !isAdultContent(m)).map(mapAniListToAnimeBase);
 }
 
 /** Search anime by title */
 export async function searchAnimeFromAniList(queryText: string, page = 1, limit = 24): Promise<AnimeBase[]> {
+  const lower = queryText.toLowerCase();
+  const adultTerms = ["hentai", "erotica", "porn", "xxx", "r18", "nsfw"];
+  if (adultTerms.some((t) => lower.includes(t))) {
+    return [];
+  }
+
   const query = `
     query SearchAnime($search: String, $page: Int, $perPage: Int) {
       Page(page: $page, perPage: $perPage) {
-        media(type: ANIME, search: $search, sort: SEARCH_MATCH) {
+        media(type: ANIME, isAdult: false, search: $search, sort: SEARCH_MATCH) {
           ${MEDIA_FIELDS}
         }
       }
@@ -318,15 +359,20 @@ export async function searchAnimeFromAniList(queryText: string, page = 1, limit 
   }
 
   const data = await anilistRequest<Response>(query, { search: queryText, page, perPage: limit }, 600);
-  return data.Page.media.map(mapAniListToAnimeBase);
+  return data.Page.media.filter((m) => !isAdultContent(m)).map(mapAniListToAnimeBase);
 }
 
 /** Fetch anime by genre sorted by popularity */
 export async function fetchAnimeByGenreFromAniList(genre: string, page = 1, limit = 24): Promise<AnimeBase[]> {
+  const lower = genre.toLowerCase();
+  if (lower === "hentai" || lower === "erotica") {
+    return [];
+  }
+
   const query = `
     query GetAnimeByGenre($genre: String, $page: Int, $perPage: Int) {
       Page(page: $page, perPage: $perPage) {
-        media(type: ANIME, genre: $genre, sort: POPULARITY_DESC) {
+        media(type: ANIME, isAdult: false, genre: $genre, sort: POPULARITY_DESC) {
           ${MEDIA_FIELDS}
         }
       }
@@ -340,7 +386,7 @@ export async function fetchAnimeByGenreFromAniList(genre: string, page = 1, limi
   }
 
   const data = await anilistRequest<Response>(query, { genre, page, perPage: limit }, 3600);
-  return data.Page.media.map(mapAniListToAnimeBase);
+  return data.Page.media.filter((m) => !isAdultContent(m)).map(mapAniListToAnimeBase);
 }
 
 /** Get full anime details by ID (matches idMal or AniList id) */
@@ -348,7 +394,7 @@ export async function fetchAnimeFullFromAniList(id: number): Promise<AnimeFull> 
   // First attempt query by idMal (MyAnimeList ID)
   const queryWithMal = `
     query GetAnimeByIdMal($idMal: Int) {
-      Media(idMal: $idMal, type: ANIME) {
+      Media(idMal: $idMal, type: ANIME, isAdult: false) {
         ${MEDIA_FIELDS}
       }
     }
@@ -360,7 +406,7 @@ export async function fetchAnimeFullFromAniList(id: number): Promise<AnimeFull> 
 
   try {
     const data = await anilistRequest<SingleResponse>(queryWithMal, { idMal: id }, 86400);
-    if (data.Media) {
+    if (data.Media && !isAdultContent(data.Media)) {
       return mapAniListToAnimeFull(data.Media);
     }
   } catch {
@@ -369,15 +415,15 @@ export async function fetchAnimeFullFromAniList(id: number): Promise<AnimeFull> 
 
   const queryWithId = `
     query GetAnimeById($id: Int) {
-      Media(id: $id, type: ANIME) {
+      Media(id: $id, type: ANIME, isAdult: false) {
         ${MEDIA_FIELDS}
       }
     }
   `;
 
   const fallbackData = await anilistRequest<SingleResponse>(queryWithId, { id }, 86400);
-  if (!fallbackData.Media) {
-    throw new Error(`Anime with ID ${id} not found on AniList.`);
+  if (!fallbackData.Media || isAdultContent(fallbackData.Media)) {
+    throw new Error(`Anime with ID ${id} not found or is restricted.`);
   }
 
   return mapAniListToAnimeFull(fallbackData.Media);

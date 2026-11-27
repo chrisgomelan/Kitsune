@@ -20,6 +20,8 @@ interface WatchPlayerProps {
   title: string;
   image: string;
   totalEpisodes: number | null;
+  airedEpisodes?: number | null;
+  status?: string | null;
 }
 
 const SERVERS = [
@@ -106,6 +108,8 @@ export default function WatchPlayer({
   title,
   image,
   totalEpisodes,
+  airedEpisodes,
+  status,
 }: WatchPlayerProps) {
   const { ready, get, upsert } = useSavepoints();
   const current = get(mal_id);
@@ -273,8 +277,16 @@ useEffect(() => {
   sendNextUpInfo();
 }, [sendNextUpInfo]);
 
-// Determine total episode count (default to 24 if unknown, support 100+ if present)
-const effectiveMaxEp = totalEpisodes && totalEpisodes > 0 ? totalEpisodes : Math.max(episode, 24);
+// The highest episode available to stream
+const availableMaxEp =
+  airedEpisodes && airedEpisodes > 0
+    ? airedEpisodes
+    : totalEpisodes && totalEpisodes > 0
+    ? totalEpisodes
+    : Math.max(episode, 24);
+
+// Determine total episode count to render (support planned season count if known)
+const effectiveMaxEp = totalEpisodes && totalEpisodes > 0 ? totalEpisodes : availableMaxEp;
 
 // Episode range chunk calculation (e.g. 1-25, 26-50, etc.)
 const chunkCount = Math.max(1, Math.ceil(effectiveMaxEp / EPISODES_PER_CHUNK));
@@ -299,7 +311,10 @@ const chunkEpisodes = useMemo(() => {
 // Handle Episode Change triggered by user clicking on webpage controls
 const handleSelectEpisode = useCallback(
   (ep: number) => {
-    if (ep < 1 || (totalEpisodes && ep > totalEpisodes)) return;
+    if (ep < 1 || ep > availableMaxEp) {
+      showToast(`Episode ${ep} has not aired yet.`);
+      return;
+    }
     setEpisode(ep);
     setPlayerEpisode(ep);
     setSavedTime(0);
@@ -312,13 +327,13 @@ const handleSelectEpisode = useCallback(
 
     showToast(`Episode ${ep} loaded & saved!`);
   },
-  [totalEpisodes, mal_id, title, image, upsert]
+  [availableMaxEp, mal_id, title, image, upsert]
 );
 
 // Handle Episode Change detected from inside the video player (iframe postMessage)
 const handleSyncEpisodeFromPlayer = useCallback(
   (ep: number) => {
-    if (ep < 1 || (totalEpisodes && ep > totalEpisodes)) return;
+    if (ep < 1 || ep > availableMaxEp) return;
     if (ep === episode) return;
 
     setEpisode(ep);
@@ -444,9 +459,11 @@ useEffect(() => {
 const handleJumpToEpisode = (e: React.FormEvent) => {
   e.preventDefault();
   const epNum = parseInt(jumpInput, 10);
-  if (!isNaN(epNum) && epNum >= 1 && (!totalEpisodes || epNum <= totalEpisodes)) {
+  if (!isNaN(epNum) && epNum >= 1 && epNum <= availableMaxEp) {
     handleSelectEpisode(epNum);
     setJumpInput("");
+  } else if (!isNaN(epNum) && epNum > availableMaxEp) {
+    showToast(`Episode ${epNum} has not aired yet`);
   } else {
     showToast("Invalid episode number");
   }
@@ -634,12 +651,25 @@ return (
 
       <div className="text-center font-manga-title text-xs sm:text-sm font-bold text-black dark:text-white order-last sm:order-none w-full sm:w-auto tracking-wide uppercase">
         <span>Episode {episode}</span>
-        {totalEpisodes && <span className="text-gray-500 dark:text-gray-400 font-sans font-semibold"> / {totalEpisodes}</span>}
+        {airedEpisodes && totalEpisodes && airedEpisodes < totalEpisodes ? (
+          <span className="text-gray-500 dark:text-gray-400 font-sans font-semibold">
+            {" "}
+            / {airedEpisodes}{" "}
+            <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">
+              ({totalEpisodes} Planned)
+            </span>
+          </span>
+        ) : totalEpisodes ? (
+          <span className="text-gray-500 dark:text-gray-400 font-sans font-semibold">
+            {" "}
+            / {totalEpisodes}
+          </span>
+        ) : null}
       </div>
 
       <button
         onClick={() => handleSelectEpisode(episode + 1)}
-        disabled={Boolean(totalEpisodes && episode >= totalEpisodes)}
+        disabled={Boolean(availableMaxEp && episode >= availableMaxEp)}
         aria-label="Next episode"
         className="flex h-9 flex-1 sm:flex-initial items-center justify-center gap-1.5 border-2 border-black dark:border-white bg-black dark:bg-white px-4 text-xs font-bold uppercase text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa] hover:bg-gray-800 dark:hover:bg-gray-200 transition active:translate-x-0.5 active:translate-y-0.5 disabled:pointer-events-none disabled:opacity-30 ml-auto sm:ml-0"
       >
@@ -649,16 +679,22 @@ return (
     </div>
 
     {/* Ad-Shield & Playback Tip */}
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] px-3.5 py-2.5 text-xs text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff]">
-      <div className="flex items-center gap-2">
-        <span className="flex h-2 w-2 bg-black dark:bg-white shrink-0" />
-        <span className="font-medium text-gray-700 dark:text-gray-300">
-          <strong className="text-black dark:text-white font-bold uppercase tracking-wider">Ad-Shield Active:</strong> Pop-ups and redirects blocked. For the cleanest playback, we recommend <strong>Brave Browser</strong> or <strong>uBlock Origin</strong>.
-        </span>
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 sm:gap-4 border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] px-4 py-3 text-xs shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff]">
+      <div className="flex items-start sm:items-center gap-2.5 min-w-0">
+        <span className="mt-1 sm:mt-0 flex h-2.5 w-2.5 bg-black dark:bg-white shrink-0" />
+        <p className="text-gray-700 dark:text-gray-300 font-medium leading-normal">
+          <strong className="text-black dark:text-white font-bold uppercase tracking-wider mr-1">
+            Ad-Shield Active:
+          </strong>
+          Pop-ups and redirects blocked. For cleanest playback, use{" "}
+          <strong className="text-black dark:text-white font-semibold">Brave Browser</strong> or{" "}
+          <strong className="text-black dark:text-white font-semibold">uBlock Origin</strong>.
+        </p>
       </div>
-      <span className="text-gray-500 dark:text-gray-400 font-semibold text-[11px] shrink-0">
-        Switch server above if a video is slow
-      </span>
+      <div className="flex items-center gap-2 shrink-0 md:border-l-2 md:border-black dark:md:border-white md:pl-4 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <span className="hidden md:inline">Tip:</span>
+        <span>Switch server above if video is slow</span>
+      </div>
     </div>
 
     {/* Timestamp / Checkpoint Bar */}
@@ -722,13 +758,13 @@ return (
         </h3>
 
         {/* Quick jump input */}
-        {effectiveMaxEp > 12 && (
+        {availableMaxEp > 12 && (
           <form onSubmit={handleJumpToEpisode} className="flex items-center gap-1.5">
             <input
               type="number"
               inputMode="numeric"
               min={1}
-              max={totalEpisodes ?? 9999}
+              max={availableMaxEp}
               placeholder="Ep #"
               value={jumpInput}
               onChange={(e) => setJumpInput(e.target.value)}
@@ -743,6 +779,17 @@ return (
           </form>
         )}
       </div>
+
+      {/* Airing Notice if unreleased episodes are pending */}
+      {airedEpisodes && totalEpisodes && airedEpisodes < totalEpisodes && (
+        <div className="flex items-center gap-2 border-1.5 border-black dark:border-white bg-gray-50 dark:bg-zinc-900 px-3 py-2 text-xs font-bold uppercase tracking-wider text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff]">
+          <span className="flex h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+          <span className="font-bold">Airing Notice:</span>
+          <span className="font-semibold text-gray-700 dark:text-gray-300">
+            Episode {airedEpisodes} of {totalEpisodes} released. Episodes {airedEpisodes + 1}–{totalEpisodes} are upcoming and locked until broadcast.
+          </span>
+        </div>
+      )}
 
       {/* Range Tabs if anime has more than 25 episodes */}
       {chunkCount > 1 && (
@@ -773,6 +820,22 @@ return (
       <div className="grid grid-cols-5 gap-1.5 sm:gap-2 max-h-60 overflow-y-auto pr-1 sm:grid-cols-8 md:grid-cols-10">
         {chunkEpisodes.map((epNum) => {
           const isActive = epNum === episode;
+          const isUnreleased = epNum > availableMaxEp;
+
+          if (isUnreleased) {
+            return (
+              <button
+                key={epNum}
+                type="button"
+                disabled
+                title={`Episode ${epNum}: Not yet aired (${totalEpisodes} total planned for season)`}
+                className="flex h-10 items-center justify-center text-xs font-bold border-2 border-dashed border-gray-300 dark:border-zinc-700 bg-gray-100/60 dark:bg-zinc-800/30 text-gray-400 dark:text-gray-600 cursor-not-allowed select-none"
+              >
+                {epNum}
+              </button>
+            );
+          }
+
           return (
             <button
               key={epNum}

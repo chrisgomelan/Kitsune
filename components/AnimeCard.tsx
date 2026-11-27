@@ -50,7 +50,13 @@ export default function AnimeCard({ anime }: AnimeCardProps) {
           </h3>
         </div>
         <div className="mt-1.5 sm:mt-2 flex items-center justify-between text-[10px] sm:text-[11px] font-medium text-gray-600 dark:text-gray-400 border-t border-dashed border-gray-300 dark:border-zinc-700 pt-1 sm:pt-1.5">
-          <span>{anime.episodes ? `${anime.episodes} eps` : "Airing"}</span>
+          <span>
+            {anime.aired_episodes && anime.episodes && anime.aired_episodes < anime.episodes
+              ? `Ep ${anime.aired_episodes} / ${anime.episodes}`
+              : anime.episodes
+                ? `${anime.episodes} eps`
+                : "Airing"}
+          </span>
           <span className="truncate max-w-[70px] sm:max-w-[100px] text-right">{anime.status ?? "Available"}</span>
         </div>
       </div>

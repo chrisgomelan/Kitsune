@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 import { getAnimeFull } from "@/lib/jikan";
 import SaveButton from "@/components/SaveButton";
 import WatchPlayer from "@/components/WatchPlayer";
@@ -14,24 +15,53 @@ export async function generateMetadata({
   params,
 }: AnimeDetailPageProps): Promise<Metadata> {
   const { id } = await params;
-  const anime = await getAnimeFull(Number(id));
-  const title = anime.title_english ?? anime.title;
-  return {
-    title,
-    description: anime.synopsis?.slice(0, 155) ?? `Details for ${title}.`,
-    openGraph: {
+  try {
+    const anime = await getAnimeFull(Number(id));
+    const title = anime.title_english ?? anime.title;
+    return {
       title,
-      description: anime.synopsis?.slice(0, 155) ?? "",
-      images: [anime.images.jpg.large_image_url ?? anime.images.jpg.image_url],
-    },
-  };
+      description: anime.synopsis?.slice(0, 155) ?? `Details for ${title}.`,
+      openGraph: {
+        title,
+        description: anime.synopsis?.slice(0, 155) ?? "",
+        images: [anime.images.jpg.large_image_url ?? anime.images.jpg.image_url],
+      },
+    };
+  } catch {
+    return {
+      title: "Content Unavailable - Kitsune",
+    };
+  }
 }
 
 export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) {
   const { id } = await params;
-  const anime = await getAnimeFull(Number(id));
+  let anime;
+  try {
+    anime = await getAnimeFull(Number(id));
+  } catch {
+    notFound();
+  }
   const title = anime.title_english ?? anime.title;
   const imageUrl = anime.images.jpg.large_image_url ?? anime.images.jpg.image_url;
+
+  // Dynamic sticker based on real-time anime status / format
+  const stickerText =
+    anime.status === "Currently Airing"
+      ? "AIRING"
+      : anime.status === "Not yet aired"
+      ? "UPCOMING"
+      : anime.score && anime.score >= 8.5
+      ? "TOP TIER"
+      : anime.type ?? "SERIES";
+
+  // Dynamic responsive typography based on title character length
+  const titleSizeClass =
+    title.length > 70
+      ? "text-lg sm:text-xl md:text-2xl leading-snug"
+      : title.length > 40
+      ? "text-xl sm:text-2xl md:text-3xl leading-snug"
+      : "text-xl sm:text-3xl md:text-4xl leading-tight";
 
   return (
     <div className="mx-auto max-w-5xl px-3 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
@@ -47,9 +77,9 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
             priority
             sizes="(max-width: 768px) 220px, 256px"
           />
-          {/* Sticker */}
+          {/* Dynamic Manga Sticker */}
           <div className="absolute -bottom-2.5 -right-2 z-10 w-24 sm:w-28">
-            <JaggedShoutBubble text="INFO" />
+            <JaggedShoutBubble text={stickerText} />
           </div>
         </div>
 
@@ -60,11 +90,13 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
               Anime Profile
             </span>
-            <h1 className="font-manga-title text-xl sm:text-3xl md:text-4xl font-black leading-tight tracking-wide text-black dark:text-white uppercase">
+            <h1 className={`font-manga-title ${titleSizeClass} font-black tracking-wide text-black dark:text-white uppercase break-words`}>
               {title}
             </h1>
             {anime.title_english && anime.title !== anime.title_english && (
-              <p className="mt-0.5 text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">{anime.title}</p>
+              <p className="mt-1 text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400 line-clamp-2">
+                {anime.title}
+              </p>
             )}
 
             {/* Studio & Season Line */}
@@ -105,7 +137,13 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
             />
             <StatCard
               label="Episodes"
-              value={anime.episodes ? `${anime.episodes} eps` : "Airing"}
+              value={
+                anime.aired_episodes && anime.episodes && anime.aired_episodes < anime.episodes
+                  ? `${anime.aired_episodes} / ${anime.episodes} eps`
+                  : anime.episodes
+                    ? `${anime.episodes} eps`
+                    : "Airing"
+              }
             />
             <StatCard
               label="Format"
@@ -123,7 +161,7 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
               mal_id={anime.mal_id}
               title={title}
               image={anime.images.jpg.image_url}
-              totalEpisodes={anime.episodes}
+              totalEpisodes={anime.aired_episodes ?? anime.episodes}
             />
           </div>
         </div>
@@ -137,18 +175,38 @@ export default async function AnimeDetailPage({ params }: AnimeDetailPageProps) 
           title={title}
           image={imageUrl}
           totalEpisodes={anime.episodes}
+          airedEpisodes={anime.aired_episodes}
+          status={anime.status}
         />
       </section>
 
       {/* ── Synopsis ── */}
       {anime.synopsis && (
-        <section aria-labelledby="synopsis-heading" className="bg-white dark:bg-[#1a1b20] border-2 border-black dark:border-white p-3.5 sm:p-6 shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff] space-y-2">
+        <section aria-labelledby="synopsis-heading" className="bg-white dark:bg-[#1a1b20] border-2 border-black dark:border-white p-3.5 sm:p-6 shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff] space-y-3">
           <h2 id="synopsis-heading" className="font-manga-title text-base sm:text-xl font-black text-black dark:text-white tracking-wide uppercase">
             Story Summary
           </h2>
-          <p className="text-xs sm:text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-line font-medium">
-            {anime.synopsis}
-          </p>
+          <div className="space-y-2.5 text-xs sm:text-sm leading-relaxed text-gray-800 dark:text-gray-200 font-medium">
+            {anime.synopsis
+              .split(/\n\s*\n/)
+              .map((p) => p.trim())
+              .filter(Boolean)
+              .map((paragraph, idx) => {
+                const isSource = paragraph.startsWith("(") && paragraph.endsWith(")");
+                return (
+                  <p
+                    key={idx}
+                    className={
+                      isSource
+                        ? "text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 italic pt-1 border-t border-dashed border-gray-200 dark:border-zinc-800"
+                        : ""
+                    }
+                  >
+                    {paragraph}
+                  </p>
+                );
+              })}
+          </div>
         </section>
       )}
 

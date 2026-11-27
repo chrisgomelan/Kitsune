@@ -20,6 +20,12 @@ const MEDIA_FIELDS = `
   averageScore
   popularity
   episodes
+  isAdult
+  nextAiringEpisode {
+    episode
+    timeUntilAiring
+    airingAt
+  }
   status
   format
   genres
@@ -62,6 +68,15 @@ function mapAniList(media: any): AnimeBase {
     scored_by: media.popularity ?? 0,
     rank: null,
     episodes: media.episodes ?? null,
+    aired_episodes:
+      media.status === "FINISHED"
+        ? (media.episodes ?? null)
+        : media.status === "NOT_YET_RELEASED"
+        ? 0
+        : media.nextAiringEpisode?.episode
+        ? Math.max(0, media.nextAiringEpisode.episode - 1)
+        : (media.episodes ?? null),
+    next_airing_episode: media.nextAiringEpisode ?? null,
     status: formattedStatus,
     type: media.format ?? "TV",
     genres: (media.genres ?? []).map((name: string, i: number) => ({
@@ -90,6 +105,14 @@ export async function GET(request: Request) {
   const page = parseInt(searchParams.get("page") ?? "1", 10) || 1;
   const limit = parseInt(searchParams.get("limit") ?? "24", 10) || 24;
 
+  const adultTerms = ["hentai", "erotica", "porn", "xxx", "r18", "nsfw"];
+  if (q && adultTerms.some((t) => q.toLowerCase().includes(t))) {
+    return NextResponse.json({ results: [], page, hasMore: false });
+  }
+  if (genre && (genre.toLowerCase() === "hentai" || genre.toLowerCase() === "erotica")) {
+    return NextResponse.json({ results: [], page, hasMore: false });
+  }
+
   let query = "";
   let variables: Record<string, any> = { page, perPage: limit };
 
@@ -97,7 +120,7 @@ export async function GET(request: Request) {
     query = `
       query SearchAnime($search: String, $page: Int, $perPage: Int) {
         Page(page: $page, perPage: $perPage) {
-          media(type: ANIME, search: $search, sort: SEARCH_MATCH) {
+          media(type: ANIME, isAdult: false, search: $search, sort: SEARCH_MATCH) {
             ${MEDIA_FIELDS}
           }
         }
@@ -108,7 +131,7 @@ export async function GET(request: Request) {
     query = `
       query GetAnimeByGenre($genre: String, $page: Int, $perPage: Int) {
         Page(page: $page, perPage: $perPage) {
-          media(type: ANIME, genre: $genre, sort: POPULARITY_DESC) {
+          media(type: ANIME, isAdult: false, genre: $genre, sort: POPULARITY_DESC) {
             ${MEDIA_FIELDS}
           }
         }
@@ -119,7 +142,7 @@ export async function GET(request: Request) {
     query = `
       query GetTopAnime($page: Int, $perPage: Int) {
         Page(page: $page, perPage: $perPage) {
-          media(type: ANIME, sort: SCORE_DESC) {
+          media(type: ANIME, isAdult: false, sort: SCORE_DESC) {
             ${MEDIA_FIELDS}
           }
         }
@@ -129,7 +152,7 @@ export async function GET(request: Request) {
     query = `
       query GetSeasonalAnime($page: Int, $perPage: Int) {
         Page(page: $page, perPage: $perPage) {
-          media(type: ANIME, status: RELEASING, sort: POPULARITY_DESC) {
+          media(type: ANIME, isAdult: false, status: RELEASING, sort: POPULARITY_DESC) {
             ${MEDIA_FIELDS}
           }
         }
@@ -140,7 +163,7 @@ export async function GET(request: Request) {
     query = `
       query GetPopularAnime($page: Int, $perPage: Int) {
         Page(page: $page, perPage: $perPage) {
-          media(type: ANIME, sort: POPULARITY_DESC) {
+          media(type: ANIME, isAdult: false, sort: POPULARITY_DESC) {
             ${MEDIA_FIELDS}
           }
         }
@@ -166,7 +189,9 @@ export async function GET(request: Request) {
 
     const data = await res.json();
     const mediaList = data.data?.Page?.media ?? [];
-    const results: AnimeBase[] = mediaList.map(mapAniList);
+    const results: AnimeBase[] = mediaList
+      .filter((m: any) => !m.isAdult && !m.genres?.some((g: string) => g.toLowerCase() === "hentai" || g.toLowerCase() === "erotica"))
+      .map(mapAniList);
 
     return NextResponse.json({
       results,

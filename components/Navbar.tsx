@@ -30,14 +30,9 @@ export default function Navbar() {
           <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center border-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] group-hover:bg-white dark:group-hover:bg-black group-hover:text-black dark:group-hover:text-white transition-colors">
             <KitsuneLogo className="size-4 sm:size-5" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-manga-title text-base sm:text-2xl font-black tracking-wider text-black dark:text-white leading-none">
-              KITSUNE
-            </span>
-            <span className="hidden sm:inline text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#555555] dark:text-[#aaaaaa]">
-              Anime Tracker
-            </span>
-          </div>
+          <span className="font-manga-title text-base sm:text-2xl font-black tracking-wider text-black dark:text-white leading-none">
+            KITSUNE
+          </span>
         </Link>
 
         {/* Center / Navigation Tabs & Theme Toggle */}

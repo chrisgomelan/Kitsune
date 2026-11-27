@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CatalogGrid from "@/components/CatalogGrid";
+import CategorySelect from "@/components/CategorySelect";
 import { SpeechBalloon } from "@/components/MangaSpeechBubbles";
 import {
   getPopularAnime,
@@ -83,6 +84,36 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const rawGenre = (params.genre ?? params.category ?? "").trim();
   const rawType = (params.type ?? "").trim().toLowerCase();
 
+  // Check for restricted / adult searches
+  const adultTerms = ["hentai", "erotica", "porn", "xxx", "r18", "nsfw"];
+  const isAdultQuery =
+    adultTerms.some((t) => rawQ.toLowerCase().includes(t)) ||
+    rawGenre.toLowerCase() === "hentai" ||
+    rawGenre.toLowerCase() === "erotica";
+
+  if (isAdultQuery) {
+    return (
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 py-12 text-center space-y-4">
+        <div className="bg-white dark:bg-[#1a1b20] border-2 border-black dark:border-white p-8 max-w-md mx-auto shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#ffffff]">
+          <h2 className="font-manga-title text-xl font-black text-black dark:text-white uppercase">
+            Content Restricted
+          </h2>
+          <p className="mt-2 text-xs font-semibold text-gray-600 dark:text-gray-400">
+            Adult and explicit 18+ content is restricted on Kitsune.
+          </p>
+          <div className="mt-4">
+            <Link
+              href="/"
+              className="inline-block px-4 py-2 border-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase tracking-wider shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa]"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Normalize user intent: if query is "popular", "top", "all", or a genre name, treat as browsing
   let activeGenre = rawGenre;
   let activeType = rawType;
@@ -154,6 +185,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     return false;
   };
 
+  const categoryOptions = CATEGORY_TABS.map((tab) => {
+    const active = isTabActive(tab);
+    const href = tab.genre
+      ? `/search?genre=${encodeURIComponent(tab.genre)}`
+      : `/search?type=${tab.type}`;
+    return {
+      label: tab.label,
+      href,
+      active,
+    };
+  });
+
+  const activeOption = categoryOptions.find((opt) => opt.active) ?? categoryOptions[0];
+
   return (
     <div className="mx-auto max-w-7xl px-3 sm:px-6 py-4 sm:py-8 space-y-4 sm:space-y-6">
       
@@ -183,30 +228,27 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </div>
 
         {/* ─────────────────────────────────────────────────────────────
-            SWIPEABLE CATEGORY / GENRE FILTER PILLS
+            CATEGORY NAVIGATION: DROPDOWN ON MOBILE, PILLS ON DESKTOP
         ────────────────────────────────────────────────────────────── */}
         <div className="mt-3 sm:mt-4 pt-2.5 sm:pt-3 border-t-2 border-dashed border-gray-300 dark:border-zinc-700">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-0.5 px-0.5 sm:mx-0 sm:px-0 sm:flex-wrap no-scrollbar touch-pan-x">
-            {CATEGORY_TABS.map((tab) => {
-              const active = isTabActive(tab);
-              const href = tab.genre
-                ? `/search?genre=${encodeURIComponent(tab.genre)}`
-                : `/search?type=${tab.type}`;
+          {/* Mobile Dropdown Selector */}
+          <CategorySelect options={categoryOptions} activeHref={activeOption.href} />
 
-              return (
-                <Link
-                  key={tab.label}
-                  href={href}
-                  className={`px-2.5 py-1 sm:px-3 sm:py-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider border-2 transition whitespace-nowrap min-h-[32px] sm:min-h-[36px] flex items-center justify-center shrink-0 active:translate-x-0.5 active:translate-y-0.5 ${
-                    active
-                      ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa]"
-                      : "border-black dark:border-white bg-white dark:bg-[#1a1b20] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 shadow-[1.5px_1.5px_0px_#000000] dark:shadow-[1.5px_1.5px_0px_#ffffff]"
-                  }`}
-                >
-                  {tab.label}
-                </Link>
-              );
-            })}
+          {/* Desktop Category Pills */}
+          <div className="hidden sm:flex sm:flex-wrap items-center gap-1.5">
+            {categoryOptions.map((opt) => (
+              <Link
+                key={opt.label}
+                href={opt.href}
+                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider border-2 transition whitespace-nowrap min-h-[36px] flex items-center justify-center shrink-0 active:translate-x-0.5 active:translate-y-0.5 ${
+                  opt.active
+                    ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa]"
+                    : "border-black dark:border-white bg-white dark:bg-[#1a1b20] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 shadow-[1.5px_1.5px_0px_#000000] dark:shadow-[1.5px_1.5px_0px_#ffffff]"
+                }`}
+              >
+                {opt.label}
+              </Link>
+            ))}
           </div>
         </div>
       </header>

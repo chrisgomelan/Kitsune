@@ -63,7 +63,6 @@ export default function RootLayout({
               <span className="font-manga-title text-base text-black dark:text-white font-bold tracking-wider">
                 KITSUNE
               </span>
-              <span className="text-[#666666] dark:text-[#888888]">· Anime Tracker</span>
             </div>
             <p className="text-[#555555] dark:text-[#999999]">
               Anime data via{" "}
