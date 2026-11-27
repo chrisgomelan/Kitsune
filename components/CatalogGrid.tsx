@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AnimeCard from "@/components/AnimeCard";
 import { ChevronDownIcon } from "@/components/Icons";
 import type { AnimeBase } from "@/types/anime";
@@ -22,6 +22,14 @@ export default function CatalogGrid({
   const [page, setPage] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(initialAnime.length >= 24);
+
+  // Sync state whenever search query, genre, type, or initial results change
+  useEffect(() => {
+    setItems(initialAnime);
+    setPage(1);
+    setIsLoading(false);
+    setHasMore(initialAnime.length >= 24);
+  }, [initialAnime, q, genre, type]);
 
   const handleLoadMore = async () => {
     if (isLoading || !hasMore) return;

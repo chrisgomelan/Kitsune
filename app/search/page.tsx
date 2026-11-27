@@ -275,6 +275,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </div>
       ) : (
         <CatalogGrid
+          key={`catalog-${activeQuery}-${activeGenre}-${activeType}`}
           initialAnime={results}
           type={activeType}
           genre={activeGenre}
