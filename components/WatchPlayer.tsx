@@ -288,25 +288,29 @@ const availableMaxEp =
 // Determine total episode count to render (support planned season count if known)
 const effectiveMaxEp = totalEpisodes && totalEpisodes > 0 ? totalEpisodes : availableMaxEp;
 
-// Episode range chunk calculation (e.g. 1-25, 26-50, etc.)
-const chunkCount = Math.max(1, Math.ceil(effectiveMaxEp / EPISODES_PER_CHUNK));
-const currentChunkIndex = Math.floor((episode - 1) / EPISODES_PER_CHUNK);
+// Dynamically size episode chunks: 25 for short, 50 for medium (60-300), 100 for long series (300+)
+const episodesPerChunk =
+  effectiveMaxEp > 300 ? 100 : effectiveMaxEp > 60 ? 50 : 25;
+
+// Episode range chunk calculation
+const chunkCount = Math.max(1, Math.ceil(effectiveMaxEp / episodesPerChunk));
+const currentChunkIndex = Math.floor((episode - 1) / episodesPerChunk);
 const [selectedChunk, setSelectedChunk] = useState<number>(currentChunkIndex);
 
 // Keep selected chunk in sync when episode changes
 useEffect(() => {
-  setSelectedChunk(Math.floor((episode - 1) / EPISODES_PER_CHUNK));
-}, [episode]);
+  setSelectedChunk(Math.floor((episode - 1) / episodesPerChunk));
+}, [episode, episodesPerChunk]);
 
 const chunkEpisodes = useMemo(() => {
-  const start = selectedChunk * EPISODES_PER_CHUNK + 1;
-  const end = Math.min(start + EPISODES_PER_CHUNK - 1, effectiveMaxEp);
+  const start = selectedChunk * episodesPerChunk + 1;
+  const end = Math.min(start + episodesPerChunk - 1, effectiveMaxEp);
   const eps: number[] = [];
   for (let i = start; i <= end; i++) {
     eps.push(i);
   }
   return eps;
-}, [selectedChunk, effectiveMaxEp]);
+}, [selectedChunk, episodesPerChunk, effectiveMaxEp]);
 
 // Handle Episode Change triggered by user clicking on webpage controls
 const handleSelectEpisode = useCallback(
@@ -791,28 +795,63 @@ return (
         </div>
       )}
 
-      {/* Range Tabs if anime has more than 25 episodes */}
+      {/* Range Selector if anime has more than 1 chunk */}
       {chunkCount > 1 && (
-        <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-          {Array.from({ length: chunkCount }, (_, idx) => {
-            const start = idx * EPISODES_PER_CHUNK + 1;
-            const end = Math.min(start + EPISODES_PER_CHUNK - 1, effectiveMaxEp);
-            const isCurrent = selectedChunk === idx;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => setSelectedChunk(idx)}
-                className={`h-7 px-2.5 text-xs font-bold uppercase tracking-wider border transition-all ${
-                  isCurrent
-                    ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa]"
-                    : "border-black dark:border-white bg-white dark:bg-[#1a1b20] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 shadow-[1.5px_1.5px_0px_#000000] dark:shadow-[1.5px_1.5px_0px_#ffffff]"
-                }`}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-dashed border-gray-300 dark:border-zinc-700 pb-2">
+          {/* Dropdown Range Picker (Responsive for Mobile and compact navigation) */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 shrink-0">
+              Range:
+            </span>
+            <div className="relative flex-1 sm:flex-initial min-w-[170px]">
+              <select
+                value={selectedChunk}
+                onChange={(e) => setSelectedChunk(Number(e.target.value))}
+                aria-label="Select Episode Range"
+                className="h-8 w-full appearance-none border-2 border-black dark:border-white bg-white dark:bg-[#1a1b20] pl-3 pr-8 text-xs font-bold uppercase tracking-wider text-black dark:text-white shadow-[2px_2px_0px_#000000] dark:shadow-[2px_2px_0px_#ffffff] focus:outline-none cursor-pointer"
               >
-                {start}–{end}
-              </button>
-            );
-          })}
+                {Array.from({ length: chunkCount }, (_, idx) => {
+                  const start = idx * episodesPerChunk + 1;
+                  const end = Math.min(start + episodesPerChunk - 1, effectiveMaxEp);
+                  return (
+                    <option
+                      key={idx}
+                      value={idx}
+                      className="bg-white dark:bg-zinc-900 text-black dark:text-white font-semibold py-1"
+                    >
+                      Episodes {start} – {end}
+                    </option>
+                  );
+                })}
+              </select>
+              <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-black dark:text-white">
+                <ChevronDownIcon className="size-3.5" />
+              </span>
+            </div>
+          </div>
+
+          {/* Quick-Access Pills for Tablet / Desktop (never wrap numbers) */}
+          <div className="hidden sm:flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar">
+            {Array.from({ length: chunkCount }, (_, idx) => {
+              const start = idx * episodesPerChunk + 1;
+              const end = Math.min(start + episodesPerChunk - 1, effectiveMaxEp);
+              const isCurrent = selectedChunk === idx;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedChunk(idx)}
+                  className={`h-8 px-3 text-xs font-bold uppercase tracking-wider border-2 transition whitespace-nowrap shrink-0 ${
+                    isCurrent
+                      ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black shadow-[2px_2px_0px_#555555] dark:shadow-[2px_2px_0px_#aaaaaa]"
+                      : "border-black dark:border-white bg-white dark:bg-[#1a1b20] text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 shadow-[1.5px_1.5px_0px_#000000] dark:shadow-[1.5px_1.5px_0px_#ffffff]"
+                  }`}
+                >
+                  {start}–{end}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
